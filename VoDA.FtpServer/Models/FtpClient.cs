@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 
 using VoDA.FtpServer.Enums;
@@ -48,6 +49,8 @@ namespace VoDA.FtpServer.Models
         }
         public Task HandleTask => _handleTask;
 
+        public event Action<FtpClient> OnEndProcessing;
+
         public FtpClient(TcpClient tcpSocket)
         {
             TcpSocket = tcpSocket;
@@ -73,12 +76,12 @@ namespace VoDA.FtpServer.Models
             string? line = string.Empty;
             try
             {
-                while (!string.IsNullOrEmpty(line = _streamReader.ReadLine()))
+                while (TcpSocket.Connected && !string.IsNullOrEmpty(line = await _streamReader.ReadLineAsync()))
                 {
                     var command = new FtpCommand(line);
-                    Log.Information($"[{RemoteEndpoint}] [S <- C]: {command}");
+                    Log.Information($"[{RemoteEndpoint}][{Username}] [S <- C]: {command}");
                     var response = await FtpCommandHandler.Instance.HandleCommand(command, this, _authorization, _fileSystem, _serverOptions);
-                    Log.Information($"[{RemoteEndpoint}] [S -> C]: {response.Code} {response.Text}");
+                    Log.Information($"[{RemoteEndpoint}][{Username}] [S -> C]: {response.Code} {response.Text}");
                     if (TcpSocket == null || !TcpSocket.Connected)
                         break;
                     else
@@ -101,6 +104,11 @@ namespace VoDA.FtpServer.Models
             catch (Exception ex)
             {
                 Log.Error(ex.ToString());
+            }
+            finally
+            {
+                Log.Information($"Bye {Username}!");
+                OnEndProcessing?.Invoke(this);
             }
         }
 

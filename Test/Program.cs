@@ -16,7 +16,6 @@ namespace Test
             {
                 config.Port = 5021;
                 config.Address = System.Net.IPAddress.Any;
-                config.MaxConnections = -1;
                 config.Certificate.CertificatePath = ".\\server.crt";
                 config.Certificate.CertificateKey = ".\\server.key";
             },
@@ -24,7 +23,6 @@ namespace Test
             {
                 fs.OnDelete += (client, path) =>
                 {
-
                     if (!File.Exists(Path.Join(rootPath, path)))
                         return false;
                     File.Delete(Path.Join(rootPath, path));

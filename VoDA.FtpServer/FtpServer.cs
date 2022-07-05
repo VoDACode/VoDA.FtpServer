@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -20,8 +21,11 @@ namespace VoDA.FtpServer
         private bool _isEnable = false;
         private Task _handlerTask;
         private CancellationToken cancellation;
+        private List<FtpClient> ftpClients = new List<FtpClient>();
 
-        public FtpServer(Action<IFtpServerOptions> options, Action<IFtpServerFileSystemOptions> fileSystem, Action<IFtpServerAuthorization> authorization = default)
+        public FtpServer(Action<IFtpServerOptions> options,
+            Action<IFtpServerFileSystemOptions> fileSystem,
+            Action<IFtpServerAuthorization>? authorization = default)
         {
             options.Invoke(_options);
             if (!string.IsNullOrWhiteSpace(_options.Certificate.CertificatePath))
@@ -67,14 +71,26 @@ namespace VoDA.FtpServer
             _isEnable = true;
             cancellation = token;
             _serverSocket.Start();
+            Log.Information($"Server is running (ftp://localhost:{_options.Port}/)");
+            if (_options.MaxConnections > 0)
+            {
+                Log.Information($"Enabled limited connections mode.");
+                Log.Information($"Max count connections = {_options.MaxConnections}");
+            }
+            if(_options.Address != System.Net.IPAddress.Any)
+            {
+                Log.Information($"Enabled filter connections mode.");
+                Log.Information($"Waiting connection from {_options.Address}");
+            }
             return handler(token);
         }
 
-        public async Task StopAsync()
+        public Task StopAsync()
         {
             if (!_isEnable)
                 throw new Exception("Server isn`t runing.");
             _isEnable = false;
+            return Task.CompletedTask;
         }
 
         private Task handler(CancellationToken token)
@@ -84,11 +100,29 @@ namespace VoDA.FtpServer
                 while (!token.IsCancellationRequested && _isEnable)
                 {
                     var tcp = _serverSocket.AcceptTcpClient();
+                    if(_options.MaxConnections > 0 && ftpClients.Count >= _options.MaxConnections)
+                    {
+                        StreamWriter stream = new StreamWriter(tcp.GetStream());
+                        stream.WriteLine("221 The server is full!");
+                        stream.Flush();
+                        stream.Close();
+                        tcp.Close();
+                        stream = null;
+                        continue;
+                    }    
                     var client = new FtpClient(tcp);
+                    ftpClients.Add(client);
+                    client.OnEndProcessing += Client_OnEndProcessing;
                     client.HandleClient(_options, _ftpAuthorization, _fileSystemOptions);
                 }
+                _serverSocket.Stop();
             });
             return _handlerTask;
+        }
+
+        private void Client_OnEndProcessing(FtpClient client)
+        {
+            ftpClients.Remove(client);
         }
     }
 }
