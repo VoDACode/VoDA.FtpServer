@@ -1,9 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <OutputType>Library</OutputType>
 	  <Nullable>enable</Nullable>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	  <Description>A simple .NET library for creating an FTP server</Description>
+	  <PackageProjectUrl>https://github.com/VoDACode/VoDA.FtpServer</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/VoDACode/VoDA.FtpServer</RepositoryUrl>
+	  <RepositoryType>git</RepositoryType>
+	  <PackageTags>library;csharp;server;dotnet;ftp;net;ftp-server;fileserver;ftpserver</PackageTags>
+	  <Company>VoDA</Company>
+	  <Authors>VoDA</Authors>
   </PropertyGroup>
 
   <ItemGroup>
