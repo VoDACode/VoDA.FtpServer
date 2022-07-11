@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using VoDA.FtpServer.Interfaces;
@@ -12,55 +10,28 @@ using VoDA.FtpServer.Models;
 
 namespace VoDA.FtpServer
 {
-    public class FtpServer : IFtpServerControl
+    internal class FtpServer : IFtpServerControl
     {
         private TcpListener _serverSocket;
-        private FtpServerOptions _options = new FtpServerOptions();
-        private FtpServerAuthorization _ftpAuthorization = new FtpServerAuthorization();
-        private FtpServerFileSystemOptions _fileSystemOptions = new FtpServerFileSystemOptions();
+        private FtpServerOptions _serverOptions;
+        private FtpServerAuthorization _serverAuthorization;
+        private FtpServerFileSystemOptions _serverFileSystemOptions;
+        private FtpServerCertificate _serverCertificate;
         private bool _isEnable = false;
         private Task _handlerTask;
         private CancellationToken cancellation;
         private List<FtpClient> ftpClients = new List<FtpClient>();
 
-        public FtpServer(Action<IFtpServerOptions> options,
-            Action<IFtpServerFileSystemOptions> fileSystem,
-            Action<IFtpServerAuthorization>? authorization = default)
+        public FtpServer(FtpServerOptions serverOptions, FtpServerAuthorization serverAuthorization,
+            FtpServerFileSystemOptions serverFileSystemOptions, FtpServerCertificate serverCertificate)
         {
-            options.Invoke(_options);
-            if (!string.IsNullOrWhiteSpace(_options.Certificate.CertificatePath) &&
-                !string.IsNullOrWhiteSpace(_options.Certificate.CertificateKey))
-            {
-                _options.Certificate.CertificatePath = Path.Join(
-                        Path.GetDirectoryName(Path.GetFullPath(_options.Certificate.CertificatePath)),
-                        Path.GetFileName(_options.Certificate.CertificatePath)
-                    );
-                _options.Certificate.CertificateKey = Path.Join(
-                        Path.GetDirectoryName(Path.GetFullPath(_options.Certificate.CertificateKey)),
-                        Path.GetFileName(_options.Certificate.CertificateKey)
-                    );
-            }
-            if (!string.IsNullOrWhiteSpace(_options.Certificate.CertificatePath) &&
-                !File.Exists(_options.Certificate.CertificatePath) && 
-                !string.IsNullOrWhiteSpace(_options.Certificate.CertificateKey) &&
-                !File.Exists(_options.Certificate.CertificateKey))
-            {
-                // https://stackoverflow.com/a/52535184
-                var ecdsa = ECDsa.Create();
-                var req = new CertificateRequest("cn=VoDA.FTP", ecdsa, HashAlgorithmName.SHA256);
-                var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
-                File.WriteAllBytes(_options.Certificate.CertificateKey, cert.Export(X509ContentType.Pfx, "637925437145433542"));
-
-                File.WriteAllText(_options.Certificate.CertificatePath,
-                    "-----BEGIN CERTIFICATE-----\r\n"
-                    + Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks)
-                    + "\r\n-----END CERTIFICATE-----");
-            }
-            fileSystem.Invoke(_fileSystemOptions);
-            authorization?.Invoke(_ftpAuthorization);
-            _serverSocket = new TcpListener(_options.ServerIp, _options.Port);
+            _serverOptions = serverOptions;
+            _serverAuthorization = serverAuthorization;
+            _serverFileSystemOptions = serverFileSystemOptions;
+            _serverCertificate = serverCertificate;
+            _serverSocket = new TcpListener(_serverOptions.ServerIp, _serverOptions.Port);
             var logger = new LoggerConfiguration();
-            if (_options.IsEnableLog)
+            if (_serverOptions.IsEnableLog)
                 logger.WriteTo.Console();
             Log.Logger = logger.CreateLogger();
         }
@@ -72,16 +43,16 @@ namespace VoDA.FtpServer
             _isEnable = true;
             cancellation = token;
             _serverSocket.Start();
-            Log.Information($"Server is running (ftp://localhost:{_options.Port}/)");
-            if (_options.MaxConnections > 0)
+            Log.Information($"Server is running (ftp://localhost:{_serverOptions.Port}/)");
+            if (_serverOptions.MaxConnections > 0)
             {
                 Log.Information($"Enabled limited connections mode.");
-                Log.Information($"Max count connections = {_options.MaxConnections}");
+                Log.Information($"Max count connections = {_serverOptions.MaxConnections}");
             }
-            if (_options.ServerIp != System.Net.IPAddress.Any)
+            if (_serverOptions.ServerIp != System.Net.IPAddress.Any)
             {
                 Log.Information($"Enabled filter connections mode.");
-                Log.Information($"Waiting connection from {_options.ServerIp}");
+                Log.Information($"Waiting connection from {_serverOptions.ServerIp}");
             }
             return handler(token);
         }
@@ -101,7 +72,7 @@ namespace VoDA.FtpServer
                 while (!token.IsCancellationRequested && _isEnable)
                 {
                     var tcp = _serverSocket.AcceptTcpClient();
-                    if (_options.MaxConnections > 0 && ftpClients.Count >= _options.MaxConnections)
+                    if (_serverOptions.MaxConnections > 0 && ftpClients.Count >= _serverOptions.MaxConnections)
                     {
                         StreamWriter stream = new StreamWriter(tcp.GetStream());
                         stream.WriteLine("221 The server is full!");
@@ -114,7 +85,7 @@ namespace VoDA.FtpServer
                     var client = new FtpClient(tcp);
                     ftpClients.Add(client);
                     client.OnEndProcessing += Client_OnEndProcessing;
-                    client.HandleClient(_options, _ftpAuthorization, _fileSystemOptions);
+                    client.HandleClient(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate);
                 }
                 _serverSocket.Stop();
             });

@@ -39,6 +39,7 @@ namespace VoDA.FtpServer.Models
         private FtpServerAuthorization _authorization;
         private FtpServerFileSystemOptions _fileSystem;
         private FtpServerOptions _serverOptions;
+        private FtpServerCertificate _serverCertificate;
         private Task _handleTask;
         private string _root;
         private CancellationTokenSource _cancellationTokenSource;
@@ -64,8 +65,9 @@ namespace VoDA.FtpServer.Models
             StreamWriter = new StreamWriter(_stream);
         }
 
-        public void HandleClient(FtpServerOptions serverOptions, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem)
+        public void HandleClient(FtpServerOptions serverOptions, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerCertificate serverCertificate)
         {
+            _serverCertificate = serverCertificate;
             _serverOptions = serverOptions;
             _authorization = authorization;
             _fileSystem = fileSystem;
@@ -95,9 +97,10 @@ namespace VoDA.FtpServer.Models
                         StreamWriter.Flush();
                         if (response.Code == 221)
                             break;
-                        if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(_serverOptions.Certificate.CertificatePath))
+                        if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath) 
+                                                      && !string.IsNullOrWhiteSpace(_serverCertificate.CertificateKey))
                         {
-                            _certificate = new X509Certificate2(_serverOptions.Certificate.CertificateKey, "637925437145433542");
+                            _certificate = new X509Certificate2(_serverCertificate.CertificateKey, "637925437145433542");
                             _sslStream = new SslStream(_stream, false);
                             _sslStream.AuthenticateAsServer(_certificate);
                             StreamReader = new StreamReader(_sslStream);

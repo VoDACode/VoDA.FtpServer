@@ -3,7 +3,7 @@ using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpServerAuthorization : IFtpServerAuthorization
+    internal class FtpServerAuthorization : IFtpServerAuthorization, IValidConfig
     {
         public bool UseAuthorization { get; set; } = false;
 
@@ -27,6 +27,17 @@ namespace VoDA.FtpServer.Models
             if (status == true)
                 return true;
             return false;
+        }
+
+        public void Valid()
+        {
+            if (UseAuthorization)
+            {
+                if(UsernameVerification == null)
+                    throw new System.NotImplementedException("UsernameVerification");
+                if (PasswordVerification == null)
+                    throw new System.NotImplementedException("PasswordVerification");
+            }
         }
     }
 }

@@ -14,7 +14,7 @@
 	  <Authors>VoDA</Authors>
 	  <AssemblyVersion></AssemblyVersion>
 	  <FileVersion></FileVersion>
-	  <Version>1.1</Version>
+	  <Version>1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

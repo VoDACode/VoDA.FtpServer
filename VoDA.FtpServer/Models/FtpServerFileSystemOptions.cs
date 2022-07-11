@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using VoDA.FtpServer.Delegates;
 using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpServerFileSystemOptions : IFtpServerFileSystemOptions
+    internal class FtpServerFileSystemOptions : IFtpServerFileSystemOptions, IValidConfig
     {
         public event FileSystemRenameDelegate OnRename;
         public event FileSystemDeleteDelegate OnDelete;
@@ -45,6 +46,31 @@ namespace VoDA.FtpServer.Models
         }
         public long GetFileSize(IFtpClient client, string path)
             => OnGetFileSize == null ? -1 : OnGetFileSize.Invoke(client, path);
-            
+
+        public void Valid()
+        {
+            if(OnAppend == null)
+                throw new ArgumentNullException(nameof(OnAppend));
+            if (OnCreate == null)
+                throw new ArgumentNullException(nameof(OnCreate));
+            if (OnDelete == null)
+                throw new ArgumentNullException(nameof(OnDelete));
+            if (OnDownload == null)
+                throw new ArgumentNullException(nameof(OnDownload));
+            if (OnExistFile == null)
+                throw new ArgumentNullException(nameof(OnExistFile));
+            if (OnExistFoulder == null)
+                throw new ArgumentNullException(nameof(OnExistFoulder));
+            if (OnGetFileSize == null)
+                throw new ArgumentNullException(nameof(OnGetFileSize));
+            if (OnGetList == null)
+                throw new ArgumentNullException(nameof(OnGetList));
+            if (OnRemoveDir == null)
+                throw new ArgumentNullException(nameof(OnRemoveDir));
+            if (OnRename == null)
+                throw new ArgumentNullException(nameof(OnRename));
+            if (OnUpload == null)
+                throw new ArgumentNullException(nameof(OnUpload));
+        }
     }
 }

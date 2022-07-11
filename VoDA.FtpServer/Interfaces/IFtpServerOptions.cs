@@ -7,7 +7,6 @@ namespace VoDA.FtpServer.Interfaces
         public int Port { get; set; }
         public int MaxConnections { get; set; }
         public IPAddress ServerIp { get; set; }
-        public IFtpServerCertificate Certificate { get; }
         public bool IsEnableLog { get; set; }
     }
 }
