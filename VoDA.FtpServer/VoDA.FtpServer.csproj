@@ -12,6 +12,9 @@
 	  <PackageTags>library;csharp;server;dotnet;ftp;net;ftp-server;fileserver;ftpserver</PackageTags>
 	  <Company>VoDA</Company>
 	  <Authors>VoDA</Authors>
+	  <AssemblyVersion></AssemblyVersion>
+	  <FileVersion></FileVersion>
+	  <Version>1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
