@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Enums;
@@ -35,8 +32,14 @@ namespace VoDA.FtpServer.Commands
 
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(port);
-
-            client.DataEndpoint = new IPEndPoint(new IPAddress(ipAddress), BitConverter.ToInt16(port, 0));
+            try
+            {
+                client.DataEndpoint = new IPEndPoint(new IPAddress(ipAddress), BitConverter.ToInt16(port, 0));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"PORT: '{port[0]}','{port[0]}'\nARGS: '{args}'\n\n----------------------\n\n{ex}");
+            }
             return CustomResponse(200, "Data connection is established");
         }
     }

@@ -12,9 +12,15 @@ namespace VoDA.FtpServer.Commands
     {
         public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
-            if (string.IsNullOrWhiteSpace(args) || !fileSystem.ExistFoulder(client, Path.Join(client.Root, args)))
+            if (string.IsNullOrWhiteSpace(args))
                 return FoulderNotFound();
-            client.Root = Path.Join(client.Root, args);
+            if(fileSystem.ExistFoulder(client, NormalizationPath(Path.Join(client.Root, args))))
+                args = NormalizationPath(Path.Join(client.Root, args));
+            else if(fileSystem.ExistFoulder(client, NormalizationPath(args)))
+                args = NormalizationPath(args);
+            else
+                return FoulderNotFound();
+            client.Root = args;
             return ChangedToNewDirectory();
         }
     }

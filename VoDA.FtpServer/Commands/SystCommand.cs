@@ -10,7 +10,7 @@ namespace VoDA.FtpServer.Commands
     {
         public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
-            return CustomResponse(215, "UNIX Type: L8");
+            return CustomResponse(215, "UNIX by VoDA.FTPServer");
         }
     }
 }

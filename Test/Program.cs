@@ -15,7 +15,7 @@ namespace Test
             (config) =>
             {
                 config.Port = 5021;
-                config.Address = System.Net.IPAddress.Any;
+                config.ServerIp = System.Net.IPAddress.Any;
                 config.Certificate.CertificatePath = ".\\server.crt";
                 config.Certificate.CertificateKey = ".\\server.key";
             },
@@ -90,6 +90,11 @@ namespace Test
                 fs.OnUpload += (client, path) =>
                 {
                     return File.Create(Path.Join(rootPath, path));
+                };
+                fs.OnGetFileSize += (client, path) =>
+                {
+                    var fileInfo = new FileInfo(Path.Join(rootPath, path));
+                    return fileInfo.Length;
                 };
             },
             (auth) =>

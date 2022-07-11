@@ -9,7 +9,7 @@ namespace VoDA.FtpServer
     {
         public int Port { get; set; }
         public int MaxConnections { get; set; }
-        public IPAddress Address { get; set; } = IPAddress.Any;
+        public IPAddress ServerIp { get; set; } = IPAddress.Any;
 
         public IFtpServerCertificate Certificate { get; } = new FtpServerCertificate();
         public bool IsEnableLog { get; set; } = true;

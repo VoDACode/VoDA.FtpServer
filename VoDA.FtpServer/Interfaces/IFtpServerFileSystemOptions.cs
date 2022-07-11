@@ -14,5 +14,6 @@ namespace VoDA.FtpServer.Interfaces
         public event FileSystemUploadDelegate OnUpload;
         public event FileSystemAppendDelegate OnAppend;
         public event FileSystemGetListDelegate OnGetList;
+        public event FileSystemGetFileSizeDelegate OnGetFileSize;
     }
 }

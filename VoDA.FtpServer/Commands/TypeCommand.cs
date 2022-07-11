@@ -16,11 +16,11 @@ namespace VoDA.FtpServer.Commands
             {
                 case "A":
                     client.TransferType = Enums.TransferType.Ascii;
-                    result = Ok();
+                    result = CustomResponse(200, "Type set to A");
                     break;
                 case "I":
                     client.TransferType = Enums.TransferType.Image;
-                    result = Ok();
+                    result = CustomResponse(200, "Type set to I");
                     break;
                 default:
                     result = UnknownCommandParameter();

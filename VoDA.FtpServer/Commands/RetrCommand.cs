@@ -11,11 +11,15 @@ namespace VoDA.FtpServer.Commands
     {
         public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
+            if (string.IsNullOrWhiteSpace(args))
+                return FoulderNotFound();
             args = NormalizationPath(args);
-            args = Path.Join(client.Root, args);
-            args = NormalizationPath(args);
-            if (args == null || fileSystem.ExistFile(client, args))
-                return FileNotFound();
+            if (fileSystem.ExistFile(client, NormalizationPath(Path.Join(client.Root, args))))
+                args = NormalizationPath(Path.Join(client.Root, args));
+            else if (fileSystem.ExistFile(client, NormalizationPath(args)))
+                args = NormalizationPath(args);
+            else
+                return FoulderNotFound();
             client.SetupDataConnectionOperation(new DataConnectionOperation(client.RetrieveOperation, args));
             return CustomResponse(150, $"Opening {client.ConnectionType} mode data transfer for RETR");
         }

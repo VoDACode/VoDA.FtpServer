@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 using VoDA.FtpServer.Enums;
 using VoDA.FtpServer.Extensions;
@@ -20,13 +21,16 @@ namespace VoDA.FtpServer.Models
         public TcpClient TcpSocket { get; set; }
         private TcpClient _dataClient { get; set; }
         private NetworkStream _stream { get; }
-        private StreamReader _streamReader { get; set; }
-        private StreamWriter _streamWriter { get; set; }
+        public StreamReader StreamReader { get; set; }
+        public StreamWriter StreamWriter { get; set; }
         public ConnectionType ConnectionType { get; set; } = ConnectionType.Active;
         public FileStructureType FileStructureType { get; set; } = FileStructureType.File;
         public IPEndPoint RemoteEndpoint { get; set; }
         public IPEndPoint DataEndpoint { get; set; }
         public string RenameFrom { get; set; }
+        public int BufferSize { get; set; } = 4096;
+        private long _lastPoint { get; set; } = 0;
+        private DataConnectionOperation _lastDataConnection { get; set; }
 
         private SslStream _sslStream { get; set; }
         private X509Certificate _certificate { get; set; }
@@ -37,6 +41,7 @@ namespace VoDA.FtpServer.Models
         private FtpServerOptions _serverOptions;
         private Task _handleTask;
         private string _root;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public TransferType TransferType { get; set; }
         public string DataConnectionType { get; set; }
@@ -55,8 +60,8 @@ namespace VoDA.FtpServer.Models
         {
             TcpSocket = tcpSocket;
             _stream = tcpSocket.GetStream();
-            _streamReader = new StreamReader(_stream);
-            _streamWriter = new StreamWriter(_stream);
+            StreamReader = new StreamReader(_stream);
+            StreamWriter = new StreamWriter(_stream);
         }
 
         public void HandleClient(FtpServerOptions serverOptions, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem)
@@ -69,14 +74,14 @@ namespace VoDA.FtpServer.Models
 
         private async void _handleClient()
         {
-            _streamWriter.WriteLine("220 Service Ready.");
-            _streamWriter.Flush();
+            StreamWriter.WriteLine("220 Service Ready.");
+            StreamWriter.Flush();
             RemoteEndpoint = (IPEndPoint)TcpSocket.Client.RemoteEndPoint;
             Log.Information($"[{RemoteEndpoint}] [S -> C]: 220 Service Ready.");
             string? line = string.Empty;
             try
             {
-                while (TcpSocket.Connected && !string.IsNullOrEmpty(line = await _streamReader.ReadLineAsync()))
+                while (TcpSocket.Connected && !string.IsNullOrEmpty(line = await StreamReader.ReadLineAsync()))
                 {
                     var command = new FtpCommand(line);
                     Log.Information($"[{RemoteEndpoint}][{Username}] [S <- C]: {command}");
@@ -86,8 +91,8 @@ namespace VoDA.FtpServer.Models
                         break;
                     else
                     {
-                        _streamWriter.WriteLine($"{response.Code} {response.Text}");
-                        _streamWriter.Flush();
+                        StreamWriter.WriteLine($"{response.Code} {response.Text}");
+                        StreamWriter.Flush();
                         if (response.Code == 221)
                             break;
                         if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(_serverOptions.Certificate.CertificatePath))
@@ -95,8 +100,8 @@ namespace VoDA.FtpServer.Models
                             _certificate = new X509Certificate2(_serverOptions.Certificate.CertificateKey, "637925437145433542");
                             _sslStream = new SslStream(_stream, false);
                             _sslStream.AuthenticateAsServer(_certificate);
-                            _streamReader = new StreamReader(_sslStream);
-                            _streamWriter = new StreamWriter(_sslStream);
+                            StreamReader = new StreamReader(_sslStream);
+                            StreamWriter = new StreamWriter(_sslStream);
                         }
                     }
                 }
@@ -112,8 +117,23 @@ namespace VoDA.FtpServer.Models
             }
         }
 
+        public void StopLastCommand()
+        {
+            if(_cancellationTokenSource == null || _cancellationTokenSource.Token.IsCancellationRequested)
+                return;
+            _cancellationTokenSource.Cancel();
+        }
+        public void RestoreLastCommand(long len)
+        {
+            if (_lastDataConnection == null || !_cancellationTokenSource.IsCancellationRequested)
+                return;
+            _lastPoint = len;
+            SetupDataConnectionOperation(_lastDataConnection);
+        }
+
         public void SetupDataConnectionOperation(DataConnectionOperation dataConnection)
         {
+            _lastDataConnection = dataConnection;
             if (ConnectionType == ConnectionType.Active)
             {
                 _dataClient = new TcpClient(DataEndpoint.AddressFamily);
@@ -127,30 +147,36 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult RetrieveOperation(NetworkStream stream, string path)
         {
-            long len = 0;
             using (FileStream fs = _fileSystem.Download(this, path))
             {
-                len = fs.CopyToStream(stream);
+                _cancellationTokenSource = new CancellationTokenSource();
+                _lastPoint = fs.CopyToStream(stream, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint);
+                if (_cancellationTokenSource.IsCancellationRequested)
+                    _lastPoint = 0;
             }
             return new CustomResponse("Closing data connection, file transfer successful", 226);
         }
 
         public IFtpResult StoreOperation(NetworkStream stream, string path)
         {
-            long len = 0;
             using (FileStream fs = _fileSystem.Upload(this, path))
             {
-                stream.CopyToStream(fs);
+                _cancellationTokenSource = new CancellationTokenSource();
+                _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint);
+                if (_cancellationTokenSource.IsCancellationRequested)
+                    _lastPoint = 0;
             }
             return new CustomResponse("Closing data connection, file transfer successful", 226);
         }
 
         public IFtpResult AppendOperation(NetworkStream stream, string path)
         {
-            long len = 0;
             using (FileStream fs = _fileSystem.Append(this, path))
             {
-                stream.CopyToStream(fs);
+                _cancellationTokenSource = new CancellationTokenSource();
+                _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint);
+                if (_cancellationTokenSource.IsCancellationRequested)
+                    _lastPoint = 0;
             }
             return new CustomResponse("Closing data connection, file transfer successful", 226);
         }
@@ -193,8 +219,11 @@ namespace VoDA.FtpServer.Models
             }
             _dataClient.Close();
             _dataClient = null;
-            _streamWriter.WriteLine($"{response.Code} {response.Text}");
-            _streamWriter.Flush();
+            StreamWriter.WriteLine($"{response.Code} {response.Text}");
+            StreamWriter.Flush();
+            Log.Information($"[{RemoteEndpoint}][{Username}] [S -> C]: {response.Code} {response.Text}");
         }
+
+
     }
 }

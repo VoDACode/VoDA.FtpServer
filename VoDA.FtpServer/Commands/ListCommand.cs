@@ -17,6 +17,12 @@ namespace VoDA.FtpServer.Commands
             path = NormalizationPath(path);
             if (path == null)
                 return CustomResponse(450, "Requested file action not taken");
+            if (path.Length >= 2 && path.Substring(path.Length - 2) == "-a")
+            {
+                path = path.Substring(0, path.Length - 2);
+            }
+            if(!fileSystem.ExistFoulder(client, path))
+                return CustomResponse(450, "Requested file action not taken");
             client.SetupDataConnectionOperation(new DataConnectionOperation(client.ListOperation, path));
             return CustomResponse(150, $"Opening {client.ConnectionType} mode data transfer for LIST");
         }

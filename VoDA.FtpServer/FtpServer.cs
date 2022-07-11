@@ -28,7 +28,8 @@ namespace VoDA.FtpServer
             Action<IFtpServerAuthorization>? authorization = default)
         {
             options.Invoke(_options);
-            if (!string.IsNullOrWhiteSpace(_options.Certificate.CertificatePath))
+            if (!string.IsNullOrWhiteSpace(_options.Certificate.CertificatePath) &&
+                !string.IsNullOrWhiteSpace(_options.Certificate.CertificateKey))
             {
                 _options.Certificate.CertificatePath = Path.Join(
                         Path.GetDirectoryName(Path.GetFullPath(_options.Certificate.CertificatePath)),
@@ -40,16 +41,16 @@ namespace VoDA.FtpServer
                     );
             }
             if (!string.IsNullOrWhiteSpace(_options.Certificate.CertificatePath) &&
-                !File.Exists(_options.Certificate.CertificatePath))
+                !File.Exists(_options.Certificate.CertificatePath) && 
+                !string.IsNullOrWhiteSpace(_options.Certificate.CertificateKey) &&
+                !File.Exists(_options.Certificate.CertificateKey))
             {
-                var ecdsa = ECDsa.Create(); // generate asymmetric key pair
+                // https://stackoverflow.com/a/52535184
+                var ecdsa = ECDsa.Create();
                 var req = new CertificateRequest("cn=VoDA.FTP", ecdsa, HashAlgorithmName.SHA256);
                 var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
-
-                // Create PFX (PKCS #12) with private key
                 File.WriteAllBytes(_options.Certificate.CertificateKey, cert.Export(X509ContentType.Pfx, "637925437145433542"));
 
-                // Create Base 64 encoded CER (public key only)
                 File.WriteAllText(_options.Certificate.CertificatePath,
                     "-----BEGIN CERTIFICATE-----\r\n"
                     + Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks)
@@ -57,7 +58,7 @@ namespace VoDA.FtpServer
             }
             fileSystem.Invoke(_fileSystemOptions);
             authorization?.Invoke(_ftpAuthorization);
-            _serverSocket = new TcpListener(_options.Address, _options.Port);
+            _serverSocket = new TcpListener(_options.ServerIp, _options.Port);
             var logger = new LoggerConfiguration();
             if (_options.IsEnableLog)
                 logger.WriteTo.Console();
@@ -77,10 +78,10 @@ namespace VoDA.FtpServer
                 Log.Information($"Enabled limited connections mode.");
                 Log.Information($"Max count connections = {_options.MaxConnections}");
             }
-            if(_options.Address != System.Net.IPAddress.Any)
+            if (_options.ServerIp != System.Net.IPAddress.Any)
             {
                 Log.Information($"Enabled filter connections mode.");
-                Log.Information($"Waiting connection from {_options.Address}");
+                Log.Information($"Waiting connection from {_options.ServerIp}");
             }
             return handler(token);
         }
@@ -100,7 +101,7 @@ namespace VoDA.FtpServer
                 while (!token.IsCancellationRequested && _isEnable)
                 {
                     var tcp = _serverSocket.AcceptTcpClient();
-                    if(_options.MaxConnections > 0 && ftpClients.Count >= _options.MaxConnections)
+                    if (_options.MaxConnections > 0 && ftpClients.Count >= _options.MaxConnections)
                     {
                         StreamWriter stream = new StreamWriter(tcp.GetStream());
                         stream.WriteLine("221 The server is full!");
@@ -109,7 +110,7 @@ namespace VoDA.FtpServer
                         tcp.Close();
                         stream = null;
                         continue;
-                    }    
+                    }
                     var client = new FtpClient(tcp);
                     ftpClients.Add(client);
                     client.OnEndProcessing += Client_OnEndProcessing;

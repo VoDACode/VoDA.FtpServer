@@ -19,10 +19,17 @@ namespace VoDA.FtpServer.Commands
         {
             if(path == null)
                 return string.Empty;
-            if (Path.DirectorySeparatorChar == '/' && !path.Contains(Path.PathSeparator))
-                return path.Replace('\\', '/');
-            if (Path.DirectorySeparatorChar == '\\' && !path.Contains(Path.PathSeparator))
-                return path.Replace('/', '\\');
+
+            if (Path.DirectorySeparatorChar == '/' && path.Contains('\\'))
+                path = path.Replace('\\', '/');
+            else if (Path.DirectorySeparatorChar == '\\' && path.Contains('/'))
+                path = path.Replace('/', '\\');
+            var len = 0;
+            do
+            {
+                len = path.Length;
+                path = path.Replace($"{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}", Path.DirectorySeparatorChar.ToString());
+            } while (len != path.Length);
             return path;
         }
 
