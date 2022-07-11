@@ -7,5 +7,6 @@ namespace VoDA.FtpServer.Interfaces
     {
         public Task StartAsync(CancellationToken token);
         public Task StopAsync();
+        public ISessionsController Sessions { get; }
     }
 }

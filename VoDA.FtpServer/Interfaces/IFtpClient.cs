@@ -7,5 +7,6 @@ namespace VoDA.FtpServer.Interfaces
         public string Username { get; }
         public IPEndPoint RemoteEndpoint { get; }
         public bool IsAuthorized { get; }
+        public void Kik();
     }
 }

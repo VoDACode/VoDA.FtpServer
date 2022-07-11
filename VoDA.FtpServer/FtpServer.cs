@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using VoDA.FtpServer.Controllers;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -20,7 +21,8 @@ namespace VoDA.FtpServer
         private bool _isEnable = false;
         private Task _handlerTask;
         private CancellationToken cancellation;
-        private List<FtpClient> ftpClients = new List<FtpClient>();
+        private SessionsController sessionsController = new SessionsController();
+        public ISessionsController Sessions => sessionsController;
 
         public FtpServer(FtpServerOptions serverOptions, FtpServerAuthorization serverAuthorization,
             FtpServerFileSystemOptions serverFileSystemOptions, FtpServerCertificate serverCertificate)
@@ -72,7 +74,7 @@ namespace VoDA.FtpServer
                 while (!token.IsCancellationRequested && _isEnable)
                 {
                     var tcp = _serverSocket.AcceptTcpClient();
-                    if (_serverOptions.MaxConnections > 0 && ftpClients.Count >= _serverOptions.MaxConnections)
+                    if (_serverOptions.MaxConnections > 0 && sessionsController.Count >= _serverOptions.MaxConnections)
                     {
                         StreamWriter stream = new StreamWriter(tcp.GetStream());
                         stream.WriteLine("221 The server is full!");
@@ -83,18 +85,12 @@ namespace VoDA.FtpServer
                         continue;
                     }
                     var client = new FtpClient(tcp);
-                    ftpClients.Add(client);
-                    client.OnEndProcessing += Client_OnEndProcessing;
+                    sessionsController.Add(client);
                     client.HandleClient(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate);
                 }
                 _serverSocket.Stop();
             });
             return _handlerTask;
-        }
-
-        private void Client_OnEndProcessing(FtpClient client)
-        {
-            ftpClients.Remove(client);
         }
     }
 }

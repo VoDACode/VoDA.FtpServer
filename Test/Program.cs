@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using VoDA.FtpServer;
 
@@ -108,8 +109,21 @@ namespace Test
                     };
                 })
                 .Build();
+            server.Sessions.OnNewConnection += Sessions_OnNewConnection;
+            server.Sessions.OnCloseConnection += Sessions_OnCloseConnection;
             server.StartAsync(System.Threading.CancellationToken.None).Wait();
         }
+
+        private static void Sessions_OnCloseConnection(VoDA.FtpServer.Interfaces.IFtpClient client, int id)
+        {
+            Console.WriteLine($"Close connect [{id}][{client.RemoteEndpoint}]'{client.Username}'");
+        }
+
+        private static void Sessions_OnNewConnection(VoDA.FtpServer.Interfaces.IFtpClient client, int id)
+        {
+            Console.WriteLine($"New connect [{id}][{client.RemoteEndpoint}]'{client.Username}'");
+        }
+
 
         private static bool Auth_PasswordVerification(string username, string password)
         {

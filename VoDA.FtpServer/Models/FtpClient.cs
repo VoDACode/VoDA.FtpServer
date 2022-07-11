@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -56,6 +55,8 @@ namespace VoDA.FtpServer.Models
         public Task HandleTask => _handleTask;
 
         public event Action<FtpClient> OnEndProcessing;
+        public event Action<FtpClient> OnConnection;
+        public event Action<FtpClient, string> OnLog;
 
         public FtpClient(TcpClient tcpSocket)
         {
@@ -80,15 +81,23 @@ namespace VoDA.FtpServer.Models
             StreamWriter.Flush();
             RemoteEndpoint = (IPEndPoint)TcpSocket.Client.RemoteEndPoint;
             Log.Information($"[{RemoteEndpoint}] [S -> C]: 220 Service Ready.");
+            if (!_authorization.UseAuthorization)
+                OnConnection?.Invoke(this);
+            bool eventAlertConnection = !_authorization.UseAuthorization;
             string? line = string.Empty;
             try
             {
-                while (TcpSocket.Connected && !string.IsNullOrEmpty(line = await StreamReader.ReadLineAsync()))
+                while (TcpSocket != null && TcpSocket.Connected && !string.IsNullOrEmpty(line = await StreamReader.ReadLineAsync()))
                 {
                     var command = new FtpCommand(line);
-                    Log.Information($"[{RemoteEndpoint}][{Username}] [S <- C]: {command}");
+                    logInfo(command.ToString(), true);
                     var response = await FtpCommandHandler.Instance.HandleCommand(command, this, _authorization, _fileSystem, _serverOptions);
-                    Log.Information($"[{RemoteEndpoint}][{Username}] [S -> C]: {response.Code} {response.Text}");
+                    logInfo($"{response.Code} {response.Text}", false);
+                    if (!eventAlertConnection && IsAuthorized)
+                    {
+                        OnConnection?.Invoke(this);
+                        eventAlertConnection = true;
+                    }
                     if (TcpSocket == null || !TcpSocket.Connected)
                         break;
                     else
@@ -97,7 +106,7 @@ namespace VoDA.FtpServer.Models
                         StreamWriter.Flush();
                         if (response.Code == 221)
                             break;
-                        if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath) 
+                        if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath)
                                                       && !string.IsNullOrWhiteSpace(_serverCertificate.CertificateKey))
                         {
                             _certificate = new X509Certificate2(_serverCertificate.CertificateKey, "637925437145433542");
@@ -122,10 +131,11 @@ namespace VoDA.FtpServer.Models
 
         public void StopLastCommand()
         {
-            if(_cancellationTokenSource == null || _cancellationTokenSource.Token.IsCancellationRequested)
+            if (_cancellationTokenSource == null || _cancellationTokenSource.Token.IsCancellationRequested)
                 return;
             _cancellationTokenSource.Cancel();
         }
+
         public void RestoreLastCommand(long len)
         {
             if (_lastDataConnection == null || !_cancellationTokenSource.IsCancellationRequested)
@@ -227,6 +237,35 @@ namespace VoDA.FtpServer.Models
             Log.Information($"[{RemoteEndpoint}][{Username}] [S -> C]: {response.Code} {response.Text}");
         }
 
+        public void Kik()
+        {
+            StopLastCommand();
+            try
+            {
+                if (TcpSocket.Connected)
+                {
+                    StreamWriter.WriteLine($"221 Bye!");
+                    StreamWriter.Flush();
+                    StreamReader.Close();
+                    StreamWriter.Close();
+                    _sslStream?.Close();
+                    TcpSocket.Close();
+                }
+            }
+            finally
+            {
+                StreamWriter = null;
+                StreamReader = null;
+                _sslStream = null;
+                TcpSocket = null;
+            }
+        }
 
+        private void logInfo(string message, bool isCommand)
+        {
+            message = $"[{RemoteEndpoint}][{Username}] [S {(isCommand ? "<-" : "->")} C]: {message}";
+            Log.Information(message);
+            OnLog?.Invoke(this, message);
+        }
     }
 }
