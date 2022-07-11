@@ -8,43 +8,45 @@ VoDA.FtpServer is a simple FTP server library. This library simplifies interacti
 
 ## Quick start
 
-To start the server, you need to create an [FtpServer](https://github.com/VoDACode/VoDA.FtpServer/blob/master/VoDA.FtpServer/FtpServer.cs) object and call the StartAsync function.
-
-Server configuration takes place in the [FtpServer](https://github.com/VoDACode/VoDA.FtpServer/blob/master/VoDA.FtpServer/FtpServer.cs) constructor.
+To start the server, you need to create an [FtpServerBuilder](https://github.com/VoDACode/VoDA.FtpServer/blob/master/VoDA.FtpServer/FtpServerBuilder.cs) object, configure it using functions, as shown in the example below. After configuration, call the ```Build()``` function to create a server.
 
 An example of an FTP server for working with the file system is given in the [Test](https://github.com/VoDACode/VoDA.FtpServer/tree/master/Test) project.
 
 ## Example
 
 ```c#
-var server = new FtpServer(
-(config) =>
-{
-    config.Port = 21; // enter the port
-    config.ServerIp = System.Net.IPAddress.Any;
-    config.Certificate.CertificatePath = ".\\server.crt";
-    config.Certificate.CertificateKey = ".\\server.key";
-},
-(fs) =>
-{
-    fs.OnDelete += (client, path) => {...}; // delete file event
-    fs.OnRename += (client, from, to) => {...}; // rename item event
-    fs.OnDownload += (client, path) => {...};   // download file event
-    fs.OnGetList += (client, path) => {...};    // get items in folder event
-    fs.OnExistFile += (client, path) => {...};  // file check event
-    fs.OnExistFoulder += (client, path) => {...};   // folder check event
-    fs.OnCreate += (client, path) => {...}; // file creation event
-    fs.OnAppend += (client, path) => {...}; // append file event
-    fs.OnRemoveDir += (client, path) => {...};  // remove folder event
-    fs.OnUpload += (client, path) => {...}; // upload file event
-    fs.OnGetFileSize += (client, path) => {...};    // get file size event
-},
-(auth) =>
-{
-    auth.UseAuthorization = true; // enable or disable authorization
-    auth.UsernameVerification += (username) => {...}; // username verification
-    auth.PasswordVerification += (username, password) => {...}; //verification of username and password
-});
+var server = new FtpServerBuilder()
+    .ListenerSettings((config) =>
+    {
+        config.Port = 21; // enter the port
+        config.ServerIp = System.Net.IPAddress.Any;
+    })
+    .Certificate((config) =>
+    {
+        config.CertificatePath = ".\\server.crt";
+        config.CertificateKey = ".\\server.key";
+    })
+    .Authorization((config) =>
+    {
+        config.UseAuthorization = true; // enable or disable authorization
+        config.UsernameVerification += (username) => {...}; // username verification
+        config.PasswordVerification += (username, password) => {...}; //verification of username and password
+    })
+    .FileSystem((fs) =>
+    {
+        fs.OnDelete += (client, path) => {...}; // delete file event
+        fs.OnRename += (client, from, to) => {...}; // rename item event
+        fs.OnDownload += (client, path) => {...};   // download file event
+        fs.OnGetList += (client, path) => {...};    // get items in folder event
+        fs.OnExistFile += (client, path) => {...};  // file check event
+        fs.OnExistFoulder += (client, path) => {...};   // folder check event
+        fs.OnCreate += (client, path) => {...}; // file creation event
+        fs.OnAppend += (client, path) => {...}; // append file event
+        fs.OnRemoveDir += (client, path) => {...};  // remove folder event
+        fs.OnUpload += (client, path) => {...}; // upload file event
+        fs.OnGetFileSize += (client, path) => {...};    // get file size event
+    })
+    .Build();
 // Start FTP-serer
 server.StartAsync(System.Threading.CancellationToken.None).Wait();
 ```
