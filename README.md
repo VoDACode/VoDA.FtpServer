@@ -21,7 +21,7 @@ var server = new FtpServer(
 (config) =>
 {
     config.Port = 21; // enter the port
-    config.Address = System.Net.IPAddress.Any; // 
+    config.ServerIp = System.Net.IPAddress.Any;
     config.Certificate.CertificatePath = ".\\server.crt";
     config.Certificate.CertificateKey = ".\\server.key";
 },
@@ -37,6 +37,7 @@ var server = new FtpServer(
     fs.OnAppend += (client, path) => {...}; // append file event
     fs.OnRemoveDir += (client, path) => {...};  // remove folder event
     fs.OnUpload += (client, path) => {...}; // upload file event
+    fs.OnGetFileSize += (client, path) => {...};    // get file size event
 },
 (auth) =>
 {
