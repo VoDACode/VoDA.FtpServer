@@ -25,10 +25,12 @@ namespace VoDA.FtpServer.Commands
             else if (Path.DirectorySeparatorChar == '\\' && path.Contains('/'))
                 path = path.Replace('/', '\\');
             var len = 0;
+            string dsc = Path.DirectorySeparatorChar.ToString();
             do
             {
                 len = path.Length;
-                path = path.Replace($"{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}", Path.DirectorySeparatorChar.ToString());
+                path = path.Replace($"{dsc}{dsc}", dsc);
+                path = path.Replace($"{dsc}..", dsc);
             } while (len != path.Length);
             return path;
         }
