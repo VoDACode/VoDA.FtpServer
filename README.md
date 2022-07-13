@@ -20,6 +20,10 @@ var server = new FtpServerBuilder()
     {
         config.Port = 21; // enter the port
         config.ServerIp = System.Net.IPAddress.Any;
+    })    
+    .Log((config) =>
+    {
+        config.Leve = LogLevel.Information; // enter log level. Default: Information
     })
     .Certificate((config) =>
     {
