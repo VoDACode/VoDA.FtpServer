@@ -13,7 +13,7 @@ namespace VoDA.FtpServer.Commands
 {
     internal abstract class BaseCommand
     {
-        public abstract Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args);
+        public abstract Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args);
 
         protected string NormalizationPath(string path)
         {

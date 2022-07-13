@@ -3,7 +3,7 @@ using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpServerAuthorization : IFtpServerAuthorization, IValidConfig
+    internal class FtpServerAuthorizationOptions : IFtpServerAuthorizationOptions, IValidConfig
     {
         public bool UseAuthorization { get; set; } = false;
 

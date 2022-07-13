@@ -35,10 +35,10 @@ namespace VoDA.FtpServer.Models
         private X509Certificate _certificate { get; set; }
 
         public TcpListener PassiveListener { get; set; }
-        private FtpServerAuthorization _authorization;
+        private FtpServerAuthorizationOptions _authorization;
         private FtpServerFileSystemOptions _fileSystem;
         private FtpServerOptions _serverOptions;
-        private FtpServerCertificate _serverCertificate;
+        private FtpServerCertificateOptions _serverCertificate;
         private Task _handleTask;
         private string _root;
         private CancellationTokenSource _cancellationTokenSource;
@@ -57,6 +57,8 @@ namespace VoDA.FtpServer.Models
         public event Action<FtpClient> OnEndProcessing;
         public event Action<FtpClient> OnConnection;
         public event Action<FtpClient, string> OnLog;
+        public event Action<FtpClient, long, long> OnUploadProgress;
+        public event Action<FtpClient, long, long> OnDownloadProgress;
 
         public FtpClient(TcpClient tcpSocket)
         {
@@ -66,7 +68,7 @@ namespace VoDA.FtpServer.Models
             StreamWriter = new StreamWriter(_stream);
         }
 
-        public void HandleClient(FtpServerOptions serverOptions, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerCertificate serverCertificate)
+        public void HandleClient(FtpServerOptions serverOptions, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerCertificateOptions serverCertificate)
         {
             _serverCertificate = serverCertificate;
             _serverOptions = serverOptions;
@@ -163,7 +165,10 @@ namespace VoDA.FtpServer.Models
             using (FileStream fs = _fileSystem.Download(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
-                _lastPoint = fs.CopyToStream(stream, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint);
+                _lastPoint = fs.CopyToStream(stream, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
+                {
+                    Task.Run(() => OnDownloadProgress?.Invoke(this, len, done));
+                });
                 if (_cancellationTokenSource.IsCancellationRequested)
                     _lastPoint = 0;
             }
@@ -175,7 +180,10 @@ namespace VoDA.FtpServer.Models
             using (FileStream fs = _fileSystem.Upload(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
-                _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint);
+                _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
+                {
+                    Task.Run(() => OnUploadProgress?.Invoke(this, len, done));
+                });
                 if (_cancellationTokenSource.IsCancellationRequested)
                     _lastPoint = 0;
             }

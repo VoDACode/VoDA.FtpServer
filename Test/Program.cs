@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using VoDA.FtpServer;
+using VoDA.FtpServer.Interfaces;
 
 namespace Test
 {
@@ -11,12 +12,15 @@ namespace Test
         {
             var rootPath = Path.GetTempPath();
             rootPath = rootPath.Remove(rootPath.Length - 1, 1);
-
             var server = new FtpServerBuilder()
                 .ListenerSettings((config) =>
                 {
                     config.Port = 5021;
                     config.ServerIp = System.Net.IPAddress.Any;
+                })
+                .Log((config) =>
+                {
+                    config.Leve = LogLevel.Information;
                 })
                 .Certificate((config) =>
                 {
@@ -114,12 +118,12 @@ namespace Test
             server.StartAsync(System.Threading.CancellationToken.None).Wait();
         }
 
-        private static void Sessions_OnCloseConnection(VoDA.FtpServer.Interfaces.IFtpClient client, int id)
+        private static void Sessions_OnCloseConnection(IFtpClient client, int id)
         {
             Console.WriteLine($"Close connect [{id}][{client.RemoteEndpoint}]'{client.Username}'");
         }
 
-        private static void Sessions_OnNewConnection(VoDA.FtpServer.Interfaces.IFtpClient client, int id)
+        private static void Sessions_OnNewConnection(IFtpClient client, int id)
         {
             Console.WriteLine($"New connect [{id}][{client.RemoteEndpoint}]'{client.Username}'");
         }

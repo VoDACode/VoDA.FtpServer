@@ -5,12 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using VoDA.FtpServer.Enums;
+using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Extensions
 {
     internal static class StreamExtension
     {
-        public static long CopyToStream(this Stream input, Stream output, int bufferSize, TransferType transferType, CancellationToken token, long startIndex = 0)
+        public static long CopyToStream(this Stream input, Stream output, int bufferSize, TransferType transferType, CancellationToken token, long startIndex = 0, Action<long, long>? progressEvent = null)
         {
             int count = 0;
             long total = 0;
@@ -25,6 +26,7 @@ namespace VoDA.FtpServer.Extensions
                         output.Write(buffer, 0, count);
                         output.Flush();
                         total += count;
+                        progressEvent?.Invoke(input.Length, total);
                     }
                     catch 
                     {
@@ -35,14 +37,15 @@ namespace VoDA.FtpServer.Extensions
             else
             {
                 char[] buffer = new char[bufferSize];
-                using (StreamReader rdr = new StreamReader(input, Encoding.ASCII))
+                using (StreamReader readStream = new StreamReader(input, Encoding.ASCII))
                 {
-                    using (StreamWriter wtr = new StreamWriter(output, Encoding.ASCII))
+                    using (StreamWriter writeStream = new StreamWriter(output, Encoding.ASCII))
                     {
-                        while (!token.IsCancellationRequested && (count = rdr.Read(buffer, 0, buffer.Length)) > 0)
+                        while (!token.IsCancellationRequested && (count = readStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
-                            wtr.Write(buffer, 0, count);
+                            writeStream.Write(buffer, 0, count);
                             total += count;
+                            progressEvent?.Invoke(input.Length, total);
                         }
                     }
                 }

@@ -2,7 +2,7 @@
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpServerCertificate : IFtpServerCertificate
+    internal class FtpServerCertificateOptions : IFtpServerCertificateOptions
     {
         public string? CertificatePath { get; set; }
         public string? CertificateKey { get; set; }

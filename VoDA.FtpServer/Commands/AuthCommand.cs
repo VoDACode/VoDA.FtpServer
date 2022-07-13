@@ -9,7 +9,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("AUTH")]
     internal class AuthCommand : BaseCommand
     {
-        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
             if (args == "TLS")
                 return CustomResponse(234, "Enabling TLS Connection");

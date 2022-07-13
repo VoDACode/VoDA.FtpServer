@@ -12,7 +12,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("PBSZ")]
     internal class PbszCommand : BaseCommand
     {
-        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions, string? args)
+        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions, string? args)
         {
             int size = 0;
             if(!int.TryParse(args, out size) || size < 32)

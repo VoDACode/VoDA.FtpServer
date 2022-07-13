@@ -11,7 +11,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("EPRT")]
     internal class EprtCommand : BaseCommand
     {
-        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
             client.ConnectionType = ConnectionType.Active;
 

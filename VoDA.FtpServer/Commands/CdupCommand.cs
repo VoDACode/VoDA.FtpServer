@@ -13,7 +13,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("CDUP")]
     internal class CdupCommand : BaseCommand
     {
-        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
             string[] tmpPath = client.Root.Split(Path.DirectorySeparatorChar);
             client.Root = string.Join(Path.DirectorySeparatorChar, tmpPath.Take(tmpPath.Length - 1));

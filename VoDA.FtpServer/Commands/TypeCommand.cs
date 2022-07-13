@@ -8,7 +8,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("TYPE")]
     internal class TypeCommand : BaseCommand
     {
-        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
             string[] splitArgs = args.Split(' ');
             IFtpResult result = Error();

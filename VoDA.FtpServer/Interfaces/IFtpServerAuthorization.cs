@@ -2,7 +2,7 @@
 
 namespace VoDA.FtpServer.Interfaces
 {
-    public interface IFtpServerAuthorization
+    public interface IFtpServerAuthorizationOptions
     {
         public bool UseAuthorization { get; set; }
         public event AuthorizationUsernameDelegate UsernameVerification;

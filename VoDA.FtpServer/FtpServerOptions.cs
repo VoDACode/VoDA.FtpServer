@@ -10,7 +10,6 @@ namespace VoDA.FtpServer
         public int Port { get; set; }
         public int MaxConnections { get; set; }
         public IPAddress ServerIp { get; set; } = IPAddress.Any;
-        public bool IsEnableLog { get; set; } = true;
 
         public void Valid()
         {

@@ -43,7 +43,7 @@ namespace VoDA.FtpServer
             VerificationCommands = _verificationCommands;
         }
 
-        public async Task<IFtpResult> HandleCommand(FtpCommand command, FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions)
+        public async Task<IFtpResult> HandleCommand(FtpCommand command, FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions)
         {
             if (!Commands.ContainsKey(command.Command))
                 return new UnknownCommand502Response();

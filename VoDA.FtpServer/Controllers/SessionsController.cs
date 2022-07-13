@@ -15,8 +15,10 @@ namespace VoDA.FtpServer.Controllers
 
         public int Count => _sessions.Count;
 
-        public event Action<IFtpClient, int> OnNewConnection;
-        public event Action<IFtpClient, int> OnCloseConnection;
+        public event Action<IFtpClient, int>? OnNewConnection;
+        public event Action<IFtpClient, int>? OnCloseConnection;
+        public event Action<IFtpClient, int, long, long>? OnUploadProgress;
+        public event Action<IFtpClient, int, long, long>? OnDownloadProgress;
 
         public int Add(FtpClient value)
         {
@@ -24,6 +26,8 @@ namespace VoDA.FtpServer.Controllers
             _sessions.Add(id, value);
             value.OnConnection += (item) => OnNewConnection?.Invoke(item, id);
             value.OnEndProcessing += (item) => OnCloseConnection?.Invoke(item, id);
+            value.OnUploadProgress += (item, len, done) => OnUploadProgress?.Invoke(item, id, len, done);
+            value.OnDownloadProgress += (item, len, done) => OnDownloadProgress?.Invoke(item, id, len, done);
             return id;
         }
 

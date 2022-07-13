@@ -8,7 +8,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("SIZE")]
     internal class SizeCommand : BaseCommand
     {
-        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions, string? args)
+        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions, string? args)
         {
             if (args == null || !fileSystem.ExistFile(client, NormalizationPath(args)))
                 return FileNotFound();

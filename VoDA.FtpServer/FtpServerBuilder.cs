@@ -11,17 +11,25 @@ namespace VoDA.FtpServer
     public class FtpServerBuilder
     {
         private FtpServerOptions _serverOptions;
-        private FtpServerAuthorization _serverAuthorization;
-        private FtpServerCertificate _serverCertificate;
+        private FtpServerAuthorizationOptions _serverAuthorization;
+        private FtpServerCertificateOptions _serverCertificate;
         private FtpServerFileSystemOptions _serverFileSystemOptions;
+        private FtpServerLogOptions _serverLogOptions;
         private FtpServer _server;
 
         public FtpServerBuilder()
         {
             _serverOptions = new FtpServerOptions();
-            _serverAuthorization = new FtpServerAuthorization();
-            _serverCertificate = new FtpServerCertificate();
+            _serverAuthorization = new FtpServerAuthorizationOptions();
+            _serverCertificate = new FtpServerCertificateOptions();
             _serverFileSystemOptions = new FtpServerFileSystemOptions();
+            _serverLogOptions = new FtpServerLogOptions();
+        }
+
+        public FtpServerBuilder Log(Action<IFtpServerLogOptions> config)
+        {
+            config?.Invoke(_serverLogOptions);
+            return this;
         }
 
         public FtpServerBuilder ListenerSettings(Action<IFtpServerOptions> config)
@@ -30,13 +38,13 @@ namespace VoDA.FtpServer
             return this;
         }
 
-        public FtpServerBuilder Authorization(Action<IFtpServerAuthorization> config)
+        public FtpServerBuilder Authorization(Action<IFtpServerAuthorizationOptions> config)
         {
             runAndValid(config, _serverAuthorization);
             return this;
         }
 
-        public FtpServerBuilder Certificate(Action<IFtpServerCertificate> config)
+        public FtpServerBuilder Certificate(Action<IFtpServerCertificateOptions> config)
         {
             config?.Invoke(_serverCertificate);
             if (!string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath) &&
@@ -78,7 +86,7 @@ namespace VoDA.FtpServer
 
         public IFtpServerControl Build()
         {
-            _server = new FtpServer(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate);
+            _server = new FtpServer(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate, _serverLogOptions);
             return _server;
         }
 

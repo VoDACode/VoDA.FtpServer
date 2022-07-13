@@ -15,17 +15,18 @@ namespace VoDA.FtpServer
     {
         private TcpListener _serverSocket;
         private FtpServerOptions _serverOptions;
-        private FtpServerAuthorization _serverAuthorization;
+        private FtpServerAuthorizationOptions _serverAuthorization;
         private FtpServerFileSystemOptions _serverFileSystemOptions;
-        private FtpServerCertificate _serverCertificate;
+        private FtpServerCertificateOptions _serverCertificate;
         private bool _isEnable = false;
         private Task _handlerTask;
         private CancellationToken cancellation;
         private SessionsController sessionsController = new SessionsController();
         public ISessionsController Sessions => sessionsController;
 
-        public FtpServer(FtpServerOptions serverOptions, FtpServerAuthorization serverAuthorization,
-            FtpServerFileSystemOptions serverFileSystemOptions, FtpServerCertificate serverCertificate)
+        public FtpServer(FtpServerOptions serverOptions, FtpServerAuthorizationOptions serverAuthorization,
+            FtpServerFileSystemOptions serverFileSystemOptions, FtpServerCertificateOptions serverCertificate,
+            FtpServerLogOptions serverLogOptions)
         {
             _serverOptions = serverOptions;
             _serverAuthorization = serverAuthorization;
@@ -33,8 +34,12 @@ namespace VoDA.FtpServer
             _serverCertificate = serverCertificate;
             _serverSocket = new TcpListener(_serverOptions.ServerIp, _serverOptions.Port);
             var logger = new LoggerConfiguration();
-            if (_serverOptions.IsEnableLog)
+            if (serverLogOptions.Leve != LogLevel.None)
                 logger.WriteTo.Console();
+            if (serverLogOptions.Leve == LogLevel.Information)
+                logger.MinimumLevel.Information();
+            else if (serverLogOptions.Leve == LogLevel.Debug)
+                logger.MinimumLevel.Debug();
             Log.Logger = logger.CreateLogger();
         }
 

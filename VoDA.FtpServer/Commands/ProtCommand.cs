@@ -12,7 +12,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("PROT")]
     internal class ProtCommand : BaseCommand
     {
-        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorization authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions, string? args)
+        public override async Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions, string? args)
         {
             return CustomResponse(431, "Private");
         }
