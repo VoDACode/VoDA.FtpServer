@@ -8,7 +8,7 @@ VoDA.FtpServer is a simple FTP server library. This library simplifies interacti
 
 ## Quick start
 
-To start the server, you need to create an [FtpServerBuilder](https://github.com/VoDACode/VoDA.FtpServer/blob/master/VoDA.FtpServer/FtpServerBuilder.cs) object, configure it using functions, as shown in the example below. After configuration, call the ```Build()``` function to create a server.
+To start the server, you need to create an [FtpServerBuilder](https://github.com/VoDACode/VoDA.FtpServer/blob/master/VoDA.FtpServer/FtpServerBuilder.cs) object, configure it using functions, as shown in the example below. For more information about each function, see [ConfigurationParameters](https://github.com/VoDACode/VoDA.FtpServer/blob/master/docs/ConfigurationParameters.md). After configuration, call the ```Build()``` function to create a server.
 
 An example of an FTP server for working with the file system is given in the [Test](https://github.com/VoDACode/VoDA.FtpServer/tree/master/Test) project.
 
@@ -23,7 +23,7 @@ var server = new FtpServerBuilder()
     })    
     .Log((config) =>
     {
-        config.Leve = LogLevel.Information; // enter log level. Default: Information
+        config.Level = LogLevel.Information; // enter log level. Default: Information
     })
     .Certificate((config) =>
     {
