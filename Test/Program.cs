@@ -20,7 +20,7 @@ namespace Test
                 })
                 .Log((config) =>
                 {
-                    config.Leve = LogLevel.Information;
+                    config.Level = LogLevel.Information;
                 })
                 .Certificate((config) =>
                 {
@@ -93,7 +93,7 @@ namespace Test
                     };
                     fs.OnAppend += (client, path) =>
                     {
-                        return File.Open(Path.Join(rootPath, path), FileMode.Open);
+                        return File.Open(Path.Join(rootPath, path), FileMode.Append);
                     };
                     fs.OnRemoveDir += (client, path) =>
                     {

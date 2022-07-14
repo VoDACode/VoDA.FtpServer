@@ -4,6 +4,6 @@ namespace VoDA.FtpServer.Models
 {
     internal class FtpServerLogOptions : IFtpServerLogOptions
     {
-        public LogLevel Leve { get; set; } = LogLevel.Information;
+        public LogLevel Level { get; set; } = LogLevel.Information;
     }
 }

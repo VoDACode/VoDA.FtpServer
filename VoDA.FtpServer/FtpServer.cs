@@ -34,11 +34,11 @@ namespace VoDA.FtpServer
             _serverCertificate = serverCertificate;
             _serverSocket = new TcpListener(_serverOptions.ServerIp, _serverOptions.Port);
             var logger = new LoggerConfiguration();
-            if (serverLogOptions.Leve != LogLevel.None)
+            if (serverLogOptions.Level != LogLevel.None)
                 logger.WriteTo.Console();
-            if (serverLogOptions.Leve == LogLevel.Information)
+            if (serverLogOptions.Level == LogLevel.Information)
                 logger.MinimumLevel.Information();
-            else if (serverLogOptions.Leve == LogLevel.Debug)
+            else if (serverLogOptions.Level == LogLevel.Debug)
                 logger.MinimumLevel.Debug();
             Log.Logger = logger.CreateLogger();
         }
