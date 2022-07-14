@@ -15,7 +15,7 @@ namespace VoDA.FtpServer
         private FtpServerCertificateOptions _serverCertificate;
         private FtpServerFileSystemOptions _serverFileSystemOptions;
         private FtpServerLogOptions _serverLogOptions;
-        private FtpServer _server;
+        private FtpServer? _server;
 
         public FtpServerBuilder()
         {

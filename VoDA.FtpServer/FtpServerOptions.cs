@@ -7,13 +7,13 @@ namespace VoDA.FtpServer
 {
     internal class FtpServerOptions : IFtpServerOptions, IValidConfig
     {
-        public int Port { get; set; }
+        public int Port { get; set; } = 21;
         public int MaxConnections { get; set; }
         public IPAddress ServerIp { get; set; } = IPAddress.Any;
 
         public void Valid()
         {
-            if (Port < 0 || Port >= 65536)
+            if (Port <= 0 || Port >= 65536)
                 throw new ArgumentOutOfRangeException("Port");
             if (MaxConnections < 0)
                 throw new ArgumentOutOfRangeException("MaxConnections");

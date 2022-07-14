@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+
 using VoDA.FtpServer;
 using VoDA.FtpServer.Interfaces;
 
@@ -24,7 +25,6 @@ namespace Test
                 })
                 .Certificate((config) =>
                 {
-
                     config.CertificatePath = ".\\server.crt";
                     config.CertificateKey = ".\\server.key";
                 })
@@ -36,11 +36,18 @@ namespace Test
                 })
                 .FileSystem((fs) =>
                 {
-                    fs.OnDelete += (client, path) =>
+                    fs.OnDeleteFile += (client, path) =>
                     {
                         if (!File.Exists(Path.Join(rootPath, path)))
                             return false;
                         File.Delete(Path.Join(rootPath, path));
+                        return true;
+                    };
+                    fs.OnDeleteFolder += (client, path) =>
+                    {
+                        if (!Directory.Exists(Path.Join(rootPath, path)))
+                            return false;
+                        Directory.Delete(Path.Join(rootPath, path), true);
                         return true;
                     };
                     fs.OnRename += (client, from, to) =>
@@ -95,13 +102,6 @@ namespace Test
                     {
                         return File.Open(Path.Join(rootPath, path), FileMode.Append);
                     };
-                    fs.OnRemoveDir += (client, path) =>
-                    {
-                        if (!Directory.Exists(Path.Join(rootPath, path)))
-                            return false;
-                        Directory.Delete(Path.Join(rootPath, path), true);
-                        return true;
-                    };
                     fs.OnUpload += (client, path) =>
                     {
                         return File.Create(Path.Join(rootPath, path));
@@ -127,7 +127,6 @@ namespace Test
         {
             Console.WriteLine($"New connect [{id}][{client.RemoteEndpoint}]'{client.Username}'");
         }
-
 
         private static bool Auth_PasswordVerification(string username, string password)
         {

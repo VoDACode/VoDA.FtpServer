@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
@@ -9,12 +10,12 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("PASS")]
     internal class PassCommand : BaseCommand
     {
-        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
-            if(!authorization.TryPasswordVerification(client.Username, args))
-                return NotLoggedIn();
+            if(args == null || !authorization.TryPasswordVerification(client.Username, args))
+                return Task.FromResult(NotLoggedIn());
             client.IsAuthorized = true;
-            return UserLoggedIn();
+            return Task.FromResult(UserLoggedIn());
         }
     }
 }

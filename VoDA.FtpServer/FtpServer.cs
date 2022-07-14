@@ -1,10 +1,10 @@
 ﻿using Serilog;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+
 using VoDA.FtpServer.Controllers;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
@@ -19,7 +19,7 @@ namespace VoDA.FtpServer
         private FtpServerFileSystemOptions _serverFileSystemOptions;
         private FtpServerCertificateOptions _serverCertificate;
         private bool _isEnable = false;
-        private Task _handlerTask;
+        private Task? _handlerTask;
         private CancellationToken cancellation;
         private SessionsController sessionsController = new SessionsController();
         public ISessionsController Sessions => sessionsController;
@@ -81,7 +81,7 @@ namespace VoDA.FtpServer
                     var tcp = _serverSocket.AcceptTcpClient();
                     if (_serverOptions.MaxConnections > 0 && sessionsController.Count >= _serverOptions.MaxConnections)
                     {
-                        StreamWriter stream = new StreamWriter(tcp.GetStream());
+                        StreamWriter? stream = new StreamWriter(tcp.GetStream());
                         stream.WriteLine("221 The server is full!");
                         stream.Flush();
                         stream.Close();

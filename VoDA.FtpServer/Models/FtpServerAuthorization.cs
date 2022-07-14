@@ -7,8 +7,8 @@ namespace VoDA.FtpServer.Models
     {
         public bool UseAuthorization { get; set; } = false;
 
-        public event AuthorizationUsernameDelegate UsernameVerification;
-        public event AuthorizationDelegate PasswordVerification;
+        public event AuthorizationUsernameDelegate? UsernameVerification;
+        public event AuthorizationDelegate? PasswordVerification;
 
         public bool TryUsernameVerification(string username)
         {

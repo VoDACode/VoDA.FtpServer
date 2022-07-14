@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
@@ -8,12 +9,13 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("REIN")]
     internal class ReinCommand : BaseCommand
     {
-        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
-            client.Username = null;
+            client.Username = string.Empty;
             client.PassiveListener = null;
-            client.TcpSocket = null;
-            return CustomResponse(220, "Service ready for new user");
+            client.DataClient = null;
+            client.IsAuthorized = false;
+            return Task.FromResult(CustomResponse(220, "Service ready for new user"));
         }
     }
 }

@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using VoDA.FtpServer.Delegates;
 using VoDA.FtpServer.Interfaces;
+#nullable disable
 
 namespace VoDA.FtpServer.Models
 {
     internal class FtpServerFileSystemOptions : IFtpServerFileSystemOptions, IValidConfig
     {
         public event FileSystemRenameDelegate OnRename;
-        public event FileSystemDeleteDelegate OnDelete;
-        public event FileSystemDeleteDelegate OnRemoveDir;
+        public event FileSystemDeleteDelegate OnDeleteFile;
+        public event FileSystemDeleteDelegate OnDeleteFolder;
         public event FileSystemCreateDelegate OnCreate;
         public event FileSystemExistDelegate OnExistFile;
         public event FileSystemDownloadDelegate OnDownload;
@@ -23,21 +24,21 @@ namespace VoDA.FtpServer.Models
         public bool Rename(IFtpClient client, string from, string to)
             => OnRename == null ? false : OnRename.Invoke(client, from, to);
         public bool Delete(IFtpClient client, string path)
-            => OnDelete == null ? false : OnDelete.Invoke(client, path);
+            => OnDeleteFile == null ? false : OnDeleteFile.Invoke(client, path);
         public bool RemoveDir(IFtpClient client, string path)
-            => OnRemoveDir == null ? false : OnRemoveDir.Invoke(client, path);
+            => OnDeleteFolder == null ? false : OnDeleteFolder.Invoke(client, path);
         public bool Create(IFtpClient client, string path)
             => OnCreate == null ? false : OnCreate.Invoke(client, path);
         public bool ExistFile(IFtpClient client, string path)
             => OnExistFile == null ? false : OnExistFile.Invoke(client, path);
         public bool ExistFoulder(IFtpClient client, string path)
         => OnExistFoulder == null ? false : OnExistFoulder.Invoke(client, path);
-        public FileStream? Download(IFtpClient client, string path)
-            => OnDownload == null ? null : OnDownload.Invoke(client, path);
-        public FileStream? Upload(IFtpClient client, string path)
-            => OnUpload == null ? null : OnUpload.Invoke(client, path);
-        public FileStream? Append(IFtpClient client, string path)
-            => OnAppend == null ? null : OnAppend.Invoke(client, path);
+        public FileStream Download(IFtpClient client, string path)
+            => OnDownload.Invoke(client, path);
+        public FileStream Upload(IFtpClient client, string path)
+            => OnUpload.Invoke(client, path);
+        public FileStream Append(IFtpClient client, string path)
+            => OnAppend.Invoke(client, path);
         public (IReadOnlyList<DirectoryModel>, IReadOnlyList<FileModel>) List(IFtpClient client, string path)
         {
             if (OnGetList is null)
@@ -49,12 +50,12 @@ namespace VoDA.FtpServer.Models
 
         public void Valid()
         {
-            if(OnAppend == null)
+            if (OnAppend == null)
                 throw new ArgumentNullException(nameof(OnAppend));
             if (OnCreate == null)
                 throw new ArgumentNullException(nameof(OnCreate));
-            if (OnDelete == null)
-                throw new ArgumentNullException(nameof(OnDelete));
+            if (OnDeleteFile == null)
+                throw new ArgumentNullException(nameof(OnDeleteFile));
             if (OnDownload == null)
                 throw new ArgumentNullException(nameof(OnDownload));
             if (OnExistFile == null)
@@ -65,8 +66,8 @@ namespace VoDA.FtpServer.Models
                 throw new ArgumentNullException(nameof(OnGetFileSize));
             if (OnGetList == null)
                 throw new ArgumentNullException(nameof(OnGetList));
-            if (OnRemoveDir == null)
-                throw new ArgumentNullException(nameof(OnRemoveDir));
+            if (OnDeleteFolder == null)
+                throw new ArgumentNullException(nameof(OnDeleteFolder));
             if (OnRename == null)
                 throw new ArgumentNullException(nameof(OnRename));
             if (OnUpload == null)

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
@@ -8,8 +9,10 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("TYPE")]
     internal class TypeCommand : BaseCommand
     {
-        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
+            if (args == null)
+                return Task.FromResult(UnknownCommandParameter());
             string[] splitArgs = args.Split(' ');
             IFtpResult result = Error();
             switch (splitArgs[0])
@@ -38,7 +41,7 @@ namespace VoDA.FtpServer.Commands
                         result = UnknownCommandParameter();
                         break;
                 }
-            return result;
+            return Task.FromResult(result);
         }
     }
 }

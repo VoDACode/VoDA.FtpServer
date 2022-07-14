@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 using VoDA.FtpServer.Interfaces;
@@ -15,7 +11,7 @@ namespace VoDA.FtpServer.Commands
     {
         public abstract Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args);
 
-        protected string NormalizationPath(string path)
+        protected string NormalizationPath(string? path)
         {
             if(path == null)
                 return string.Empty;

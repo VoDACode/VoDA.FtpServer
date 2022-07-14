@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace VoDA.FtpServer.Interfaces
+﻿namespace VoDA.FtpServer.Interfaces
 {
     public interface IFtpClientAuthorization
     {

@@ -17,48 +17,50 @@ namespace VoDA.FtpServer.Models
 {
     internal class FtpClient : IFtpClient
     {
-        public TcpClient TcpSocket { get; set; }
-        private TcpClient _dataClient { get; set; }
+        public TcpClient? TcpSocket { get; set; }
+        public TcpClient? DataClient { get; set; }
         private NetworkStream _stream { get; }
-        public StreamReader StreamReader { get; set; }
-        public StreamWriter StreamWriter { get; set; }
+        public StreamReader? StreamReader { get; set; }
+        public StreamWriter? StreamWriter { get; set; }
         public ConnectionType ConnectionType { get; set; } = ConnectionType.Active;
         public FileStructureType FileStructureType { get; set; } = FileStructureType.File;
-        public IPEndPoint RemoteEndpoint { get; set; }
-        public IPEndPoint DataEndpoint { get; set; }
-        public string RenameFrom { get; set; }
+        public IPEndPoint? RemoteEndpoint { get; set; }
+        public IPEndPoint? DataEndpoint { get; set; }
+        public string? RenameFrom { get; set; }
         public int BufferSize { get; set; } = 4096;
         private long _lastPoint { get; set; } = 0;
-        private DataConnectionOperation _lastDataConnection { get; set; }
+        private DataConnectionOperation? _lastDataConnection { get; set; }
 
-        private SslStream _sslStream { get; set; }
-        private X509Certificate _certificate { get; set; }
+        private SslStream? _sslStream { get; set; }
+        private X509Certificate? _certificate { get; set; }
 
-        public TcpListener PassiveListener { get; set; }
+        public TcpListener? PassiveListener { get; set; }
+#nullable disable
         private FtpServerAuthorizationOptions _authorization;
         private FtpServerFileSystemOptions _fileSystem;
         private FtpServerOptions _serverOptions;
         private FtpServerCertificateOptions _serverCertificate;
-        private Task _handleTask;
-        private string _root;
-        private CancellationTokenSource _cancellationTokenSource;
+#nullable enable
+        private Task? _handleTask;
+        private string? _root;
+        private CancellationTokenSource? _cancellationTokenSource;
 
         public TransferType TransferType { get; set; }
-        public string DataConnectionType { get; set; }
+        public string? DataConnectionType { get; set; }
         public bool IsAuthorized { get; set; }
-        public string? Username { get; set; }
+        public string Username { get; set; } = String.Empty;
         public string Root
         {
             set => _root = value;
             get => string.IsNullOrWhiteSpace(_root) ? Path.DirectorySeparatorChar.ToString() : _root;
         }
-        public Task HandleTask => _handleTask;
+        public Task? HandleTask => _handleTask;
 
-        public event Action<FtpClient> OnEndProcessing;
-        public event Action<FtpClient> OnConnection;
-        public event Action<FtpClient, string> OnLog;
-        public event Action<FtpClient, long, long> OnUploadProgress;
-        public event Action<FtpClient, long, long> OnDownloadProgress;
+        public event Action<FtpClient>? OnEndProcessing;
+        public event Action<FtpClient>? OnConnection;
+        public event Action<FtpClient, string>? OnLog;
+        public event Action<FtpClient, long, long>? OnUploadProgress;
+        public event Action<FtpClient, long, long>? OnDownloadProgress;
 
         public FtpClient(TcpClient tcpSocket)
         {
@@ -79,8 +81,10 @@ namespace VoDA.FtpServer.Models
 
         private async void _handleClient()
         {
-            StreamWriter.WriteLine("220 Service Ready.");
-            StreamWriter.Flush();
+            StreamWriter?.WriteLine("220 Service Ready.");
+            StreamWriter?.Flush();
+            if (TcpSocket?.Client.RemoteEndPoint == null)
+                throw new ArgumentNullException("TcpSocket.Client.RemoteEndPoint");
             RemoteEndpoint = (IPEndPoint)TcpSocket.Client.RemoteEndPoint;
             Log.Information($"[{RemoteEndpoint}] [S -> C]: 220 Service Ready.");
             if (!_authorization.UseAuthorization)
@@ -89,7 +93,7 @@ namespace VoDA.FtpServer.Models
             string? line = string.Empty;
             try
             {
-                while (TcpSocket != null && TcpSocket.Connected && !string.IsNullOrEmpty(line = await StreamReader.ReadLineAsync()))
+                while (TcpSocket != null && TcpSocket.Connected && StreamReader != null && !string.IsNullOrEmpty(line = await StreamReader.ReadLineAsync()))
                 {
                     var command = new FtpCommand(line);
                     logInfo(command.ToString(), true);
@@ -104,8 +108,8 @@ namespace VoDA.FtpServer.Models
                         break;
                     else
                     {
-                        StreamWriter.WriteLine($"{response.Code} {response.Text}");
-                        StreamWriter.Flush();
+                        StreamWriter?.WriteLine($"{response.Code} {response.Text}");
+                        StreamWriter?.Flush();
                         if (response.Code == 221)
                             break;
                         if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath)
@@ -140,7 +144,7 @@ namespace VoDA.FtpServer.Models
 
         public void RestoreLastCommand(long len)
         {
-            if (_lastDataConnection == null || !_cancellationTokenSource.IsCancellationRequested)
+            if (_lastDataConnection == null || !_cancellationTokenSource?.IsCancellationRequested == true)
                 return;
             _lastPoint = len;
             SetupDataConnectionOperation(_lastDataConnection);
@@ -151,11 +155,15 @@ namespace VoDA.FtpServer.Models
             _lastDataConnection = dataConnection;
             if (ConnectionType == ConnectionType.Active)
             {
-                _dataClient = new TcpClient(DataEndpoint.AddressFamily);
-                _dataClient.BeginConnect(DataEndpoint.Address, DataEndpoint.Port, eventDataConnectionOperation, dataConnection);
+                if (DataEndpoint == null)
+                    throw new ArgumentNullException("DataEndpoint");
+                DataClient = new TcpClient(DataEndpoint.AddressFamily);
+                DataClient.BeginConnect(DataEndpoint.Address, DataEndpoint.Port, eventDataConnectionOperation, dataConnection);
             }
             else
             {
+                if (PassiveListener == null)
+                    throw new ArgumentNullException("PassiveListener");
                 PassiveListener.BeginAcceptTcpClient(eventDataConnectionOperation, dataConnection);
             }
         }
@@ -228,21 +236,33 @@ namespace VoDA.FtpServer.Models
         private void eventDataConnectionOperation(IAsyncResult result)
         {
             if (ConnectionType == ConnectionType.Active)
-                _dataClient.EndConnect(result);
-            else
-                _dataClient = PassiveListener.EndAcceptTcpClient(result);
-
-            DataConnectionOperation options = result.AsyncState as DataConnectionOperation;
-            IFtpResult response;
-            using (NetworkStream dataStream = _dataClient.GetStream())
             {
-                response = options.Func(dataStream, options.Arguments);
+                if (DataClient == null)
+                    throw new ArgumentNullException("DataEndpoint");
+                DataClient.EndConnect(result);
             }
-            _dataClient.Close();
-            _dataClient = null;
-            StreamWriter.WriteLine($"{response.Code} {response.Text}");
-            StreamWriter.Flush();
-            Log.Information($"[{RemoteEndpoint}][{Username}] [S -> C]: {response.Code} {response.Text}");
+            else
+            {
+                if (PassiveListener == null)
+                    throw new ArgumentNullException("PassiveListener");
+                DataClient = PassiveListener.EndAcceptTcpClient(result);
+            }
+
+            DataConnectionOperation? options = result.AsyncState as DataConnectionOperation;
+            if (options != null)
+            {
+
+                IFtpResult response;
+                using (NetworkStream dataStream = DataClient.GetStream())
+                {
+                    response = options.Func(dataStream, options.Arguments);
+                }
+                StreamWriter?.WriteLine($"{response.Code} {response.Text}");
+                StreamWriter?.Flush();
+                Log.Information($"[{RemoteEndpoint}][{Username}] [S -> C]: {response.Code} {response.Text}");
+            }
+            DataClient.Close();
+            DataClient = null;
         }
 
         public void Kik()
@@ -250,14 +270,14 @@ namespace VoDA.FtpServer.Models
             StopLastCommand();
             try
             {
-                if (TcpSocket.Connected)
+                if (TcpSocket?.Connected == true)
                 {
-                    StreamWriter.WriteLine($"221 Bye!");
-                    StreamWriter.Flush();
-                    StreamReader.Close();
-                    StreamWriter.Close();
+                    StreamWriter?.WriteLine($"221 Bye!");
+                    StreamWriter?.Flush();
+                    StreamReader?.Close();
+                    StreamWriter?.Close();
                     _sslStream?.Close();
-                    TcpSocket.Close();
+                    TcpSocket?.Close();
                 }
             }
             finally

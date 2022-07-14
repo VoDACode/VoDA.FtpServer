@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Enums;
 using VoDA.FtpServer.Interfaces;
@@ -9,7 +10,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("STRU")]
     internal class StruCommand : BaseCommand
     {
-        public async override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args)
         {
             switch (args)
             {
@@ -18,11 +19,11 @@ namespace VoDA.FtpServer.Commands
                     break;
                 case "R":
                 case "P":
-                    return CustomResponse(504, $"STRU not implemented for \"{args}\"");
+                    return Task.FromResult(CustomResponse(504, $"STRU not implemented for \"{args}\""));
                 default:
-                    return CustomResponse(501, $"Parameter {args} not recognized");
+                    return Task.FromResult(CustomResponse(501, $"Parameter {args} not recognized"));
             }
-            return Ok();
+            return Task.FromResult(Ok());
         }
     }
 }

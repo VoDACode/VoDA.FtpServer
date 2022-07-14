@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
+
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Commands;
 using VoDA.FtpServer.Interfaces;
@@ -14,7 +14,7 @@ namespace VoDA.FtpServer
 {
     internal class FtpCommandHandler
     {
-        private static FtpCommandHandler _instance;
+        private static FtpCommandHandler? _instance;
         public static FtpCommandHandler Instance => _instance ?? (_instance = new FtpCommandHandler());
 
         private IReadOnlyDictionary<string, BaseCommand> Commands { get; }
@@ -34,6 +34,8 @@ namespace VoDA.FtpServer
                 if(obj == null)
                     continue;
                 var key = command.GetCustomAttribute<FtpCommandAttribute>();
+                if (key == null)
+                    throw new ArgumentNullException($"FtpCommandAttribute\n Type: {command.FullName}");
                 _commands.Add(key.Command, obj);
                 var auth = command.GetCustomAttribute<AuthorizeAttribute>();
                 if (!(auth is null))
