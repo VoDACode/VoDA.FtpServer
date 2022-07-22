@@ -4,5 +4,5 @@ using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Delegates
 {
-    public delegate FileStream FileSystemUploadDelegate(IFtpClient client, string path);
+    public delegate Stream FileSystemUploadDelegate(IFtpClient client, string path);
 }

@@ -33,11 +33,11 @@ namespace VoDA.FtpServer.Models
             => OnExistFile == null ? false : OnExistFile.Invoke(client, path);
         public bool ExistFoulder(IFtpClient client, string path)
         => OnExistFoulder == null ? false : OnExistFoulder.Invoke(client, path);
-        public FileStream Download(IFtpClient client, string path)
+        public Stream Download(IFtpClient client, string path)
             => OnDownload.Invoke(client, path);
-        public FileStream Upload(IFtpClient client, string path)
+        public Stream Upload(IFtpClient client, string path)
             => OnUpload.Invoke(client, path);
-        public FileStream Append(IFtpClient client, string path)
+        public Stream Append(IFtpClient client, string path)
             => OnAppend.Invoke(client, path);
         public (IReadOnlyList<DirectoryModel>, IReadOnlyList<FileModel>) List(IFtpClient client, string path)
         {

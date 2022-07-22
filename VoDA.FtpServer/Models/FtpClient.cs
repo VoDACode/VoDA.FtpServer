@@ -170,7 +170,7 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult RetrieveOperation(NetworkStream stream, string path)
         {
-            using (FileStream fs = _fileSystem.Download(this, path))
+            using (Stream fs = _fileSystem.Download(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = fs.CopyToStream(stream, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
@@ -185,7 +185,7 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult StoreOperation(NetworkStream stream, string path)
         {
-            using (FileStream fs = _fileSystem.Upload(this, path))
+            using (Stream fs = _fileSystem.Upload(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
@@ -200,7 +200,7 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult AppendOperation(NetworkStream stream, string path)
         {
-            using (FileStream fs = _fileSystem.Append(this, path))
+            using (Stream fs = _fileSystem.Append(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint);
