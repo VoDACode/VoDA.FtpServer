@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoDA.FtpServer", "VoDA.FtpServer\VoDA.FtpServer.csproj", "{D35D2D4A-3051-4A8E-A151-5750F48B841E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{5848ED2F-3122-47C7-BF0C-EBE8E7BC95E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{5848ED2F-3122-47C7-BF0C-EBE8E7BC95E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
