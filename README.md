@@ -38,7 +38,7 @@ var server = new FtpServerBuilder()
     })
     .FileSystem((fs) =>
     {
-        fs.OnDelete += (client, path) => {...}; // delete file event
+        fs.OnDeleteFile += (client, path) => {...}; // delete file event
         fs.OnRename += (client, from, to) => {...}; // rename item event
         fs.OnDownload += (client, path) => {...};   // download file event
         fs.OnGetList += (client, path) => {...};    // get items in folder event
@@ -46,7 +46,7 @@ var server = new FtpServerBuilder()
         fs.OnExistFoulder += (client, path) => {...};   // folder check event
         fs.OnCreate += (client, path) => {...}; // file creation event
         fs.OnAppend += (client, path) => {...}; // append file event
-        fs.OnRemoveDir += (client, path) => {...};  // remove folder event
+        fs.OnDeleteFolder += (client, path) => {...};  // remove folder event
         fs.OnUpload += (client, path) => {...}; // upload file event
         fs.OnGetFileSize += (client, path) => {...};    // get file size event
     })
