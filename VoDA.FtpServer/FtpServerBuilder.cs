@@ -5,24 +5,22 @@ using System.Security.Cryptography;
 
 using VoDA.FtpServer.Models;
 using VoDA.FtpServer.Interfaces;
+using VoDA.FtpServer.Contexts;
 
 namespace VoDA.FtpServer
 {
     public class FtpServerBuilder
     {
         private FtpServerOptions _serverOptions;
-        private FtpServerAuthorizationOptions _serverAuthorization;
-        private FtpServerCertificateOptions _serverCertificate;
-        private FtpServerFileSystemOptions _serverFileSystemOptions;
+        private AuthorizationOptionsContext _serverAuthorization;
+        private CertificateOptionsContext _serverCertificate;
+        private FileSystemOptionsContext _serverFileSystemOptions;
         private FtpServerLogOptions _serverLogOptions;
         private FtpServer? _server;
 
         public FtpServerBuilder()
         {
             _serverOptions = new FtpServerOptions();
-            _serverAuthorization = new FtpServerAuthorizationOptions();
-            _serverCertificate = new FtpServerCertificateOptions();
-            _serverFileSystemOptions = new FtpServerFileSystemOptions();
             _serverLogOptions = new FtpServerLogOptions();
         }
 
@@ -40,47 +38,73 @@ namespace VoDA.FtpServer
 
         public FtpServerBuilder Authorization(Action<IFtpServerAuthorizationOptions> config)
         {
-            runAndValid(config, _serverAuthorization);
+            var data = new FtpServerAuthorizationOptions();
+            config.Invoke(data);
+            data.Valid();
+            _serverAuthorization = data;
+            return this;
+        }
+
+        public FtpServerBuilder Authorization<T>() where T : AuthorizationOptionsContext, new()
+        {
+            _serverAuthorization = new T();
             return this;
         }
 
         public FtpServerBuilder Certificate(Action<IFtpServerCertificateOptions> config)
         {
-            config?.Invoke(_serverCertificate);
-            if (!string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath) &&
-                !string.IsNullOrWhiteSpace(_serverCertificate.CertificateKey))
+            var data = new FtpServerCertificateOptions();
+            config?.Invoke(data);
+            if (!string.IsNullOrWhiteSpace(data.CertificatePath) &&
+                !string.IsNullOrWhiteSpace(data.CertificateKey))
             {
-                _serverCertificate.CertificatePath = Path.Join(
-                        Path.GetDirectoryName(Path.GetFullPath(_serverCertificate.CertificatePath)),
-                        Path.GetFileName(_serverCertificate.CertificatePath)
+                data.CertificatePath = Path.Join(
+                        Path.GetDirectoryName(Path.GetFullPath(data.CertificatePath)),
+                        Path.GetFileName(data.CertificatePath)
                     );
-                _serverCertificate.CertificateKey = Path.Join(
-                        Path.GetDirectoryName(Path.GetFullPath(_serverCertificate.CertificateKey)),
-                        Path.GetFileName(_serverCertificate.CertificateKey)
+                data.CertificateKey = Path.Join(
+                        Path.GetDirectoryName(Path.GetFullPath(data.CertificateKey)),
+                        Path.GetFileName(data.CertificateKey)
                     );
             }
-            if (!string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath) &&
-                !File.Exists(_serverCertificate.CertificatePath) &&
-                !string.IsNullOrWhiteSpace(_serverCertificate.CertificateKey) &&
-                !File.Exists(_serverCertificate.CertificateKey))
+            if (!string.IsNullOrWhiteSpace(data.CertificatePath) &&
+                !File.Exists(data.CertificatePath) &&
+                !string.IsNullOrWhiteSpace(data.CertificateKey) &&
+                !File.Exists(data.CertificateKey))
             {
                 // https://stackoverflow.com/a/52535184
                 var ecdsa = ECDsa.Create();
                 var req = new CertificateRequest("cn=VoDA.FTP", ecdsa, HashAlgorithmName.SHA256);
                 var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
-                File.WriteAllBytes(_serverCertificate.CertificateKey, cert.Export(X509ContentType.Pfx, "637925437145433542"));
+                File.WriteAllBytes(data.CertificateKey, cert.Export(X509ContentType.Pfx, "637925437145433542"));
 
-                File.WriteAllText(_serverCertificate.CertificatePath,
+                File.WriteAllText(data.CertificatePath,
                     "-----BEGIN CERTIFICATE-----\r\n"
                     + Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks)
                     + "\r\n-----END CERTIFICATE-----");
             }
+            _serverCertificate = data;
+            return this;
+        }
+
+        public FtpServerBuilder Certificate<T>() where T : CertificateOptionsContext, new()
+        {
+            _serverCertificate = new T();
             return this;
         }
 
         public FtpServerBuilder FileSystem(Action<IFtpServerFileSystemOptions> config)
         {
-            runAndValid(config, _serverFileSystemOptions);
+            var data = new FtpServerFileSystemOptions();
+            config.Invoke(data);
+            data.Valid();
+            _serverFileSystemOptions = data;
+            return this;
+        }
+
+        public FtpServerBuilder FileSystem<T>() where T : FileSystemOptionsContext, new()
+        {
+            _serverFileSystemOptions = new T();
             return this;
         }
 

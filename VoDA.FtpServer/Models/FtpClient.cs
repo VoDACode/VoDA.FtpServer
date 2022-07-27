@@ -12,6 +12,7 @@ using VoDA.FtpServer.Enums;
 using VoDA.FtpServer.Extensions;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Responses;
+using VoDA.FtpServer.Contexts;
 
 namespace VoDA.FtpServer.Models
 {
@@ -36,10 +37,10 @@ namespace VoDA.FtpServer.Models
 
         public TcpListener? PassiveListener { get; set; }
 #nullable disable
-        private FtpServerAuthorizationOptions _authorization;
-        private FtpServerFileSystemOptions _fileSystem;
+        private AuthorizationOptionsContext _authorization;
+        private FileSystemOptionsContext _fileSystem;
         private FtpServerOptions _serverOptions;
-        private FtpServerCertificateOptions _serverCertificate;
+        private CertificateOptionsContext _serverCertificate;
 #nullable enable
         private Task? _handleTask;
         private string? _root;
@@ -70,7 +71,8 @@ namespace VoDA.FtpServer.Models
             StreamWriter = new StreamWriter(_stream);
         }
 
-        public void HandleClient(FtpServerOptions serverOptions, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerCertificateOptions serverCertificate)
+        public void HandleClient(FtpServerOptions serverOptions, AuthorizationOptionsContext authorization,
+            FileSystemOptionsContext fileSystem, CertificateOptionsContext serverCertificate)
         {
             _serverCertificate = serverCertificate;
             _serverOptions = serverOptions;

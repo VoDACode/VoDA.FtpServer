@@ -1,16 +1,17 @@
-﻿using VoDA.FtpServer.Delegates;
+﻿using VoDA.FtpServer.Contexts;
+using VoDA.FtpServer.Delegates;
 using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpServerAuthorizationOptions : IFtpServerAuthorizationOptions, IValidConfig
+    internal class FtpServerAuthorizationOptions : AuthorizationOptionsContext, IFtpServerAuthorizationOptions, IValidConfig
     {
-        public bool UseAuthorization { get; set; } = false;
+        public override bool UseAuthorization { get; set; } = false;
 
         public event AuthorizationUsernameDelegate? UsernameVerification;
         public event AuthorizationDelegate? PasswordVerification;
 
-        public bool TryUsernameVerification(string username)
+        public override bool TryUsernameVerification(string username)
         {
             if (!UseAuthorization)
                 return true;
@@ -19,7 +20,7 @@ namespace VoDA.FtpServer.Models
                 return true;
             return false;
         }
-        public bool TryPasswordVerification(string username, string password)
+        public override bool TryPasswordVerification(string username, string password)
         {
             if (!UseAuthorization)
                 return true;

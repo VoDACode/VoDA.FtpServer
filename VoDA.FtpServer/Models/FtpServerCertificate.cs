@@ -2,9 +2,9 @@
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpServerCertificateOptions : IFtpServerCertificateOptions
+    internal class FtpServerCertificateOptions : Contexts.CertificateOptionsContext, IFtpServerCertificateOptions
     {
-        public string? CertificatePath { get; set; }
-        public string? CertificateKey { get; set; }
+        public override string CertificatePath { get; set; } = string.Empty;
+        public override string CertificateKey { get; set; } = string.Empty;
     }
 }

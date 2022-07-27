@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Commands;
+using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 using VoDA.FtpServer.Responses;
@@ -45,7 +46,7 @@ namespace VoDA.FtpServer
             VerificationCommands = _verificationCommands;
         }
 
-        public async Task<IFtpResult> HandleCommand(FtpCommand command, FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions)
+        public async Task<IFtpResult> HandleCommand(FtpCommand command, FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions)
         {
             if (!Commands.ContainsKey(command.Command))
                 return new UnknownCommand502Response();

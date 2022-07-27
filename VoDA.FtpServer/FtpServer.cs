@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using VoDA.FtpServer.Controllers;
+using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -15,17 +16,17 @@ namespace VoDA.FtpServer
     {
         private TcpListener _serverSocket;
         private FtpServerOptions _serverOptions;
-        private FtpServerAuthorizationOptions _serverAuthorization;
-        private FtpServerFileSystemOptions _serverFileSystemOptions;
-        private FtpServerCertificateOptions _serverCertificate;
+        private AuthorizationOptionsContext _serverAuthorization;
+        private FileSystemOptionsContext _serverFileSystemOptions;
+        private CertificateOptionsContext _serverCertificate;
         private bool _isEnable = false;
         private Task? _handlerTask;
         private CancellationToken cancellation;
         private SessionsController sessionsController = new SessionsController();
         public ISessionsController Sessions => sessionsController;
 
-        public FtpServer(FtpServerOptions serverOptions, FtpServerAuthorizationOptions serverAuthorization,
-            FtpServerFileSystemOptions serverFileSystemOptions, FtpServerCertificateOptions serverCertificate,
+        public FtpServer(FtpServerOptions serverOptions, AuthorizationOptionsContext serverAuthorization,
+            FileSystemOptionsContext serverFileSystemOptions, CertificateOptionsContext serverCertificate,
             FtpServerLogOptions serverLogOptions)
         {
             _serverOptions = serverOptions;

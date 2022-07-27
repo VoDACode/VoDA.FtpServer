@@ -7,7 +7,7 @@ using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpServerFileSystemOptions : IFtpServerFileSystemOptions, IValidConfig
+    internal class FtpServerFileSystemOptions : Contexts.FileSystemOptionsContext, IFtpServerFileSystemOptions, IValidConfig
     {
         public event FileSystemRenameDelegate OnRename;
         public event FileSystemDeleteDelegate OnDeleteFile;
@@ -21,31 +21,31 @@ namespace VoDA.FtpServer.Models
         public event FileSystemExistDelegate OnExistFoulder;
         public event FileSystemGetFileSizeDelegate OnGetFileSize;
 
-        public bool Rename(IFtpClient client, string from, string to)
+        public override bool Rename(IFtpClient client, string from, string to)
             => OnRename == null ? false : OnRename.Invoke(client, from, to);
-        public bool Delete(IFtpClient client, string path)
+        public override bool DeleteFile(IFtpClient client, string path)
             => OnDeleteFile == null ? false : OnDeleteFile.Invoke(client, path);
-        public bool RemoveDir(IFtpClient client, string path)
+        public override bool DeleteFolder(IFtpClient client, string path)
             => OnDeleteFolder == null ? false : OnDeleteFolder.Invoke(client, path);
-        public bool Create(IFtpClient client, string path)
+        public override bool Create(IFtpClient client, string path)
             => OnCreate == null ? false : OnCreate.Invoke(client, path);
-        public bool ExistFile(IFtpClient client, string path)
+        public override bool ExistFile(IFtpClient client, string path)
             => OnExistFile == null ? false : OnExistFile.Invoke(client, path);
-        public bool ExistFoulder(IFtpClient client, string path)
-        => OnExistFoulder == null ? false : OnExistFoulder.Invoke(client, path);
-        public Stream Download(IFtpClient client, string path)
+        public override bool ExistFoulder(IFtpClient client, string path)
+            => OnExistFoulder == null ? false : OnExistFoulder.Invoke(client, path);
+        public override Stream Download(IFtpClient client, string path)
             => OnDownload.Invoke(client, path);
-        public Stream Upload(IFtpClient client, string path)
+        public override Stream Upload(IFtpClient client, string path)
             => OnUpload.Invoke(client, path);
-        public Stream Append(IFtpClient client, string path)
+        public override Stream Append(IFtpClient client, string path)
             => OnAppend.Invoke(client, path);
-        public (IReadOnlyList<DirectoryModel>, IReadOnlyList<FileModel>) List(IFtpClient client, string path)
+        public override (IReadOnlyList<DirectoryModel>, IReadOnlyList<FileModel>) List(IFtpClient client, string path)
         {
             if (OnGetList is null)
                 return (new List<DirectoryModel>(), new List<FileModel>());
             return OnGetList.Invoke(client, path);
         }
-        public long GetFileSize(IFtpClient client, string path)
+        public override long GetFileSize(IFtpClient client, string path)
             => OnGetFileSize == null ? -1 : OnGetFileSize.Invoke(client, path);
 
         public void Valid()

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-
+using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 using VoDA.FtpServer.Responses;
@@ -9,7 +9,7 @@ namespace VoDA.FtpServer.Commands
 {
     internal abstract class BaseCommand
     {
-        public abstract Task<IFtpResult> Invoke(FtpClient client, FtpServerAuthorizationOptions authorization, FtpServerFileSystemOptions fileSystem, FtpServerOptions serverOptions,string? args);
+        public abstract Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions, string? args);
 
         protected string NormalizationPath(string? path)
         {

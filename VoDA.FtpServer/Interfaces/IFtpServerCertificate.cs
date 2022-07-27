@@ -2,7 +2,7 @@
 {
     public interface IFtpServerCertificateOptions
     {
-        public string? CertificatePath { get; set; }
-        public string? CertificateKey { get; set; }
+        public string CertificatePath { get; set; }
+        public string CertificateKey { get; set; }
     }
 }
