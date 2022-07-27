@@ -54,3 +54,32 @@ var server = new FtpServerBuilder()
 // Start FTP-serer
 server.StartAsync(System.Threading.CancellationToken.None).Wait();
 ```
+
+Or you can use your own class that inherits from the context class. An example is below.
+
+In this example, class ```MyAuthorization``` inherits from ```VoDA.FtpServer.Contexts.AuthorizationOptionsContext``` and class ```MyFileSystem``` inherits from ```VoDA.FtpServer.Contexts.FileSystemOptionsContext```
+
+```c#
+var server = new FtpServerBuilder()
+    .ListenerSettings((config) =>
+    {
+        config.Port = 21; // enter the port
+        config.ServerIp = System.Net.IPAddress.Any;
+    })    
+    .Log((config) =>
+    {
+        config.Level = LogLevel.Information; // enter log level. Default: Information
+    })
+    .Certificate((config) =>
+    {
+        config.CertificatePath = ".\\server.crt";
+        config.CertificateKey = ".\\server.key";
+    })
+    .Authorization<MyAuthorization>()
+    .FileSystem<MyFileSystem>()
+    .Build();
+// Start FTP-serer
+server.StartAsync(System.Threading.CancellationToken.None).Wait();
+```
+
+Full example see in [Test](https://github.com/VoDACode/VoDA.FtpServer/tree/master/Test) project.
