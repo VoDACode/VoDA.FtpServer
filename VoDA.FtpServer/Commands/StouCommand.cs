@@ -11,7 +11,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("STOU")]
     internal class StouCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             string path = new Guid().ToString();
             path = NormalizationPath(path);

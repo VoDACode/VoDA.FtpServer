@@ -11,7 +11,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("STRU")]
     internal class StruCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             switch (args)
             {

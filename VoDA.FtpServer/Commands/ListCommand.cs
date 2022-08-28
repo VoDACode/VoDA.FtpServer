@@ -11,9 +11,10 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("LIST")]
     internal class ListCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             var path = args ?? client.Root;
+            path = args != null && args.Contains('.') ? client.Root : path;
             path = NormalizationPath(path);
             path = Path.Join(client.Root, args);
             path = NormalizationPath(path);
@@ -23,7 +24,7 @@ namespace VoDA.FtpServer.Commands
             {
                 path = path.Substring(0, path.Length - 2);
             }
-            if(!fileSystem.ExistFoulder(client, path))
+            if(!configParameters.FileSystemOptions.ExistFoulder(client, path))
                 return Task.FromResult(CustomResponse(450, "Requested file action not taken"));
             client.SetupDataConnectionOperation(new DataConnectionOperation(client.ListOperation, path));
             return Task.FromResult(CustomResponse(150, $"Opening {client.ConnectionType} mode data transfer for LIST"));

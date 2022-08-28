@@ -11,17 +11,21 @@ namespace VoDA.FtpServer
 {
     public class FtpServerBuilder
     {
+#nullable disable
         private FtpServerOptions _serverOptions;
         private AuthorizationOptionsContext _serverAuthorization;
         private CertificateOptionsContext _serverCertificate;
         private FileSystemOptionsContext _serverFileSystemOptions;
+        private AccessControlOptionsContext _serverAccessControl;
         private FtpServerLogOptions _serverLogOptions;
-        private FtpServer? _server;
-
+        private FtpServer _server;
+#nullable enable
         public FtpServerBuilder()
         {
             _serverOptions = new FtpServerOptions();
             _serverLogOptions = new FtpServerLogOptions();
+            _serverAuthorization = new FtpServerAuthorizationOptions();
+            _serverAccessControl = new FtpServerAccessControlOptions();
         }
 
         public FtpServerBuilder Log(Action<IFtpServerLogOptions> config)
@@ -108,9 +112,27 @@ namespace VoDA.FtpServer
             return this;
         }
 
+        public FtpServerBuilder AccessControl(Action<IFtpServerAccessControlOptions> config)
+        {
+            var data = new FtpServerAccessControlOptions();
+            config.Invoke(data);
+            _serverAccessControl = data;
+            return this;
+        }
+
+        public FtpServerBuilder AccessControl<T>() where T : AccessControlOptionsContext, new()
+        {
+            _serverAccessControl = new T();
+            return this;
+        }
+
         public IFtpServerControl Build()
         {
-            _server = new FtpServer(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate, _serverLogOptions);
+            if (_serverFileSystemOptions == null)
+                throw new ArgumentNullException("The algorithm for processing requests to work with the file system is not specified!");
+            if (_serverCertificate == null)
+                throw new ArgumentNullException("Security certificate file names are not specified!");
+            _server = new FtpServer(new FtpServerParameters(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate, _serverLogOptions, _serverAccessControl));
             return _server;
         }
 

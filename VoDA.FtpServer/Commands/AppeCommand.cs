@@ -11,7 +11,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("APPE")]
     internal class AppeCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             args = NormalizationPath(args);
             args = Path.Join(client.Root, args);

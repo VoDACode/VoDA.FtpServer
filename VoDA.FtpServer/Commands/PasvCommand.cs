@@ -12,7 +12,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("PASV")]
     internal class PasvCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions, string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             client.ConnectionType = Enums.ConnectionType.Passive;
             if (client.TcpSocket?.Client.LocalEndPoint == null)

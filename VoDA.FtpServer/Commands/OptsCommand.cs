@@ -10,7 +10,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("opts")]
     internal class OptsCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions, string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             if (args == null)
                 return Task.FromResult(Error());

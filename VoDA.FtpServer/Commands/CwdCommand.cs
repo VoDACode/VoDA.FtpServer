@@ -11,13 +11,13 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("CWD")]
     internal class CwdCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             if (string.IsNullOrWhiteSpace(args))
                 return Task.FromResult(FoulderNotFound());
-            if(fileSystem.ExistFoulder(client, NormalizationPath(Path.Join(client.Root, args))))
+            if(configParameters.FileSystemOptions.ExistFoulder(client, NormalizationPath(Path.Join(client.Root, args))))
                 args = NormalizationPath(Path.Join(client.Root, args));
-            else if(fileSystem.ExistFoulder(client, NormalizationPath(args)))
+            else if(configParameters.FileSystemOptions.ExistFoulder(client, NormalizationPath(args)))
                 args = NormalizationPath(args);
             else
                 return Task.FromResult(FoulderNotFound());

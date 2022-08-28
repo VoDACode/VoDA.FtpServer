@@ -10,7 +10,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("FEAT")]
     internal class FeatCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions, string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             client.StreamWriter?.WriteLine("221 - Extensions supported:");
             client.StreamWriter?.WriteLine(" SIZE");

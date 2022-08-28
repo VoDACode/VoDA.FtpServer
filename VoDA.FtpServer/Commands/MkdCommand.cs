@@ -11,12 +11,12 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("MKD")]
     internal class MkdCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             args = NormalizationPath(args);
             args = Path.Join(client.Root, args);
             args = NormalizationPath(args);
-            if (!fileSystem.Create(client, args))
+            if (!configParameters.FileSystemOptions.Create(client, args))
                 return Task.FromResult(CustomResponse(550, "Directory already exists"));
             return Task.FromResult(CustomResponse(250, "Requested file action okay, completed"));
         }

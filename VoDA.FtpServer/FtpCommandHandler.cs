@@ -46,13 +46,13 @@ namespace VoDA.FtpServer
             VerificationCommands = _verificationCommands;
         }
 
-        public async Task<IFtpResult> HandleCommand(FtpCommand command, FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions)
+        public async Task<IFtpResult> HandleCommand(FtpCommand command, FtpClient client, FtpClientParameters configParameters)
         {
             if (!Commands.ContainsKey(command.Command))
                 return new UnknownCommand502Response();
-            if (authorization.UseAuthorization && !client.IsAuthorized && !VerificationCommands.Any(p => p == command.Command))
+            if (configParameters.AuthorizationOptions.UseAuthorization && !client.IsAuthorized && !VerificationCommands.Any(p => p == command.Command))
                 return new NotLoggedIn530Response();
-            return await Commands[command.Command].Invoke(client, authorization, fileSystem, serverOptions, command.Arguments);
+            return await Commands[command.Command].Invoke(client, configParameters, command.Arguments);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("PWD")]
     internal class PwdCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             return Task.FromResult(CustomResponse(257, $"\"{client.Root}\" is current directory."));
         }

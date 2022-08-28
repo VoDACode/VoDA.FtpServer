@@ -10,7 +10,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("REST")]
     internal class RestCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions, string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             if (!long.TryParse(args, out var len))
                 return Task.FromResult(UnknownCommandParameter());

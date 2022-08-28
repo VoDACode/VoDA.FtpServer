@@ -9,37 +9,31 @@ using VoDA.FtpServer.Controllers;
 using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
+using System.Net;
+using System.Linq;
 
 namespace VoDA.FtpServer
 {
     internal class FtpServer : IFtpServerControl
     {
         private TcpListener _serverSocket;
-        private FtpServerOptions _serverOptions;
-        private AuthorizationOptionsContext _serverAuthorization;
-        private FileSystemOptionsContext _serverFileSystemOptions;
-        private CertificateOptionsContext _serverCertificate;
+        FtpServerParameters _serverParameters;
         private bool _isEnable = false;
         private Task? _handlerTask;
         private CancellationToken cancellation;
         private SessionsController sessionsController = new SessionsController();
         public ISessionsController Sessions => sessionsController;
 
-        public FtpServer(FtpServerOptions serverOptions, AuthorizationOptionsContext serverAuthorization,
-            FileSystemOptionsContext serverFileSystemOptions, CertificateOptionsContext serverCertificate,
-            FtpServerLogOptions serverLogOptions)
+        public FtpServer(FtpServerParameters parameters)
         {
-            _serverOptions = serverOptions;
-            _serverAuthorization = serverAuthorization;
-            _serverFileSystemOptions = serverFileSystemOptions;
-            _serverCertificate = serverCertificate;
-            _serverSocket = new TcpListener(_serverOptions.ServerIp, _serverOptions.Port);
+            _serverParameters = parameters;
+            _serverSocket = new TcpListener(_serverParameters.serverOptions.ServerIp, _serverParameters.serverOptions.Port);
             var logger = new LoggerConfiguration();
-            if (serverLogOptions.Level != LogLevel.None)
+            if (_serverParameters.serverLogOptions.Level != LogLevel.None)
                 logger.WriteTo.Console();
-            if (serverLogOptions.Level == LogLevel.Information)
+            if (_serverParameters.serverLogOptions.Level == LogLevel.Information)
                 logger.MinimumLevel.Information();
-            else if (serverLogOptions.Level == LogLevel.Debug)
+            else if (_serverParameters.serverLogOptions.Level == LogLevel.Debug)
                 logger.MinimumLevel.Debug();
             Log.Logger = logger.CreateLogger();
         }
@@ -51,16 +45,16 @@ namespace VoDA.FtpServer
             _isEnable = true;
             cancellation = token;
             _serverSocket.Start();
-            Log.Information($"Server is running (ftp://localhost:{_serverOptions.Port}/)");
-            if (_serverOptions.MaxConnections > 0)
+            Log.Information($"Server is running (ftp://localhost:{_serverParameters.serverOptions.Port}/)");
+            if (_serverParameters.serverOptions.MaxConnections > 0)
             {
                 Log.Information($"Enabled limited connections mode.");
-                Log.Information($"Max count connections = {_serverOptions.MaxConnections}");
+                Log.Information($"Max count connections = {_serverParameters.serverOptions.MaxConnections}");
             }
-            if (_serverOptions.ServerIp != System.Net.IPAddress.Any)
+            if (_serverParameters.serverOptions.ServerIp != System.Net.IPAddress.Any)
             {
                 Log.Information($"Enabled filter connections mode.");
-                Log.Information($"Waiting connection from {_serverOptions.ServerIp}");
+                Log.Information($"Waiting connection from {_serverParameters.serverOptions.ServerIp}");
             }
             return handler(token);
         }
@@ -80,23 +74,41 @@ namespace VoDA.FtpServer
                 while (!token.IsCancellationRequested && _isEnable)
                 {
                     var tcp = _serverSocket.AcceptTcpClient();
-                    if (_serverOptions.MaxConnections > 0 && sessionsController.Count >= _serverOptions.MaxConnections)
+                    var sw = new StreamWriter(tcp.GetStream());
+                    IPEndPoint RemoteEndpoint = (IPEndPoint)tcp.Client.RemoteEndPoint;
+                    if (_serverParameters.serverAccessControl.EnableСonnectionСiltering)
                     {
-                        StreamWriter? stream = new StreamWriter(tcp.GetStream());
-                        stream.WriteLine("221 The server is full!");
-                        stream.Flush();
-                        stream.Close();
-                        tcp.Close();
-                        stream = null;
+                        if (_serverParameters.serverAccessControl.BlacklistMode == _serverParameters.serverAccessControl.Filters.Any(p => p.Address == RemoteEndpoint.Address.Address))
+                        {
+                            closeConnection(tcp, ref sw, "221 Access is denied.");
+                            continue;
+                        }
+                    }
+                    if (_serverParameters.serverOptions.MaxConnections > 0
+                    && sessionsController.Count >= _serverParameters.serverOptions.MaxConnections)
+                    {
+                        closeConnection(tcp, ref sw, "221 The server is full!");
                         continue;
                     }
                     var client = new FtpClient(tcp);
                     sessionsController.Add(client);
-                    client.HandleClient(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate);
+                    client.HandleClient(_serverParameters);
                 }
                 _serverSocket.Stop();
             });
             return _handlerTask;
+        }
+
+        private void closeConnection(TcpClient tcp, ref StreamWriter sw, string message = null)
+        {
+            if (message != null)
+            {
+                sw.WriteLine(message);
+                sw.Flush();
+                sw.Close();
+                sw = null;
+            }
+            tcp.Close();
         }
     }
 }

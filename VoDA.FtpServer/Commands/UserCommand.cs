@@ -11,9 +11,9 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("USER")]
     internal class UserCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
-            if (args == null || !authorization.TryUsernameVerification(args))
+            if (args == null || !configParameters.AuthorizationOptions.TryUsernameVerification(args))
                 return Task.FromResult(NotLoggedIn());
             client.Username = args;
             return Task.FromResult(UsernameOk());

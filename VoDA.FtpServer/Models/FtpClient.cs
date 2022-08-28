@@ -37,10 +37,7 @@ namespace VoDA.FtpServer.Models
 
         public TcpListener? PassiveListener { get; set; }
 #nullable disable
-        private AuthorizationOptionsContext _authorization;
-        private FileSystemOptionsContext _fileSystem;
-        private FtpServerOptions _serverOptions;
-        private CertificateOptionsContext _serverCertificate;
+        private FtpClientParameters configParameters { get; set; }
 #nullable enable
         private Task? _handleTask;
         private string? _root;
@@ -71,13 +68,9 @@ namespace VoDA.FtpServer.Models
             StreamWriter = new StreamWriter(_stream);
         }
 
-        public void HandleClient(FtpServerOptions serverOptions, AuthorizationOptionsContext authorization,
-            FileSystemOptionsContext fileSystem, CertificateOptionsContext serverCertificate)
+        public void HandleClient(FtpClientParameters parameters)
         {
-            _serverCertificate = serverCertificate;
-            _serverOptions = serverOptions;
-            _authorization = authorization;
-            _fileSystem = fileSystem;
+            configParameters = parameters;
             _handleTask = Task.Run(_handleClient);
         }
 
@@ -89,9 +82,9 @@ namespace VoDA.FtpServer.Models
                 throw new ArgumentNullException("TcpSocket.Client.RemoteEndPoint");
             RemoteEndpoint = (IPEndPoint)TcpSocket.Client.RemoteEndPoint;
             Log.Information($"[{RemoteEndpoint}] [S -> C]: 220 Service Ready.");
-            if (!_authorization.UseAuthorization)
+            if (!configParameters.AuthorizationOptions.UseAuthorization)
                 OnConnection?.Invoke(this);
-            bool eventAlertConnection = !_authorization.UseAuthorization;
+            bool eventAlertConnection = !configParameters.AuthorizationOptions.UseAuthorization;
             string? line = string.Empty;
             try
             {
@@ -99,7 +92,7 @@ namespace VoDA.FtpServer.Models
                 {
                     var command = new FtpCommand(line);
                     logInfo(command.ToString(), true);
-                    var response = await FtpCommandHandler.Instance.HandleCommand(command, this, _authorization, _fileSystem, _serverOptions);
+                    var response = await FtpCommandHandler.Instance.HandleCommand(command, this, configParameters);
                     logInfo($"{response.Code} {response.Text}", false);
                     if (!eventAlertConnection && IsAuthorized)
                     {
@@ -114,10 +107,10 @@ namespace VoDA.FtpServer.Models
                         StreamWriter?.Flush();
                         if (response.Code == 221)
                             break;
-                        if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(_serverCertificate.CertificatePath)
-                                                      && !string.IsNullOrWhiteSpace(_serverCertificate.CertificateKey))
+                        if (command.Command == "AUTH" && !string.IsNullOrWhiteSpace(configParameters.CertificateOptions.CertificatePath)
+                                                      && !string.IsNullOrWhiteSpace(configParameters.CertificateOptions.CertificateKey))
                         {
-                            _certificate = new X509Certificate2(_serverCertificate.CertificateKey, "637925437145433542");
+                            _certificate = new X509Certificate2(configParameters.CertificateOptions.CertificateKey, "637925437145433542");
                             _sslStream = new SslStream(_stream, false);
                             _sslStream.AuthenticateAsServer(_certificate);
                             StreamReader = new StreamReader(_sslStream);
@@ -172,7 +165,7 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult RetrieveOperation(NetworkStream stream, string path)
         {
-            using (Stream fs = _fileSystem.Download(this, path))
+            using (Stream fs = configParameters.FileSystemOptions.Download(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = fs.CopyToStream(stream, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
@@ -187,7 +180,7 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult StoreOperation(NetworkStream stream, string path)
         {
-            using (Stream fs = _fileSystem.Upload(this, path))
+            using (Stream fs = configParameters.FileSystemOptions.Upload(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
@@ -202,7 +195,7 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult AppendOperation(NetworkStream stream, string path)
         {
-            using (Stream fs = _fileSystem.Append(this, path))
+            using (Stream fs = configParameters.FileSystemOptions.Append(this, path))
             {
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint);
@@ -215,7 +208,7 @@ namespace VoDA.FtpServer.Models
         public IFtpResult ListOperation(NetworkStream stream, string path)
         {
             StreamWriter sw = new StreamWriter(stream);
-            var list = _fileSystem.List(this, path);
+            var list = configParameters.FileSystemOptions.List(this, path);
             foreach (var item in list.Item1)
             {
                 string date = item.LastWriteTime < DateTime.Now - TimeSpan.FromDays(180) ?

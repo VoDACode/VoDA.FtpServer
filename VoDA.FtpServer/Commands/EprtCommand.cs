@@ -13,7 +13,7 @@ namespace VoDA.FtpServer.Commands
     [FtpCommand("EPRT")]
     internal class EprtCommand : BaseCommand
     {
-        public override Task<IFtpResult> Invoke(FtpClient client, AuthorizationOptionsContext authorization, FileSystemOptionsContext fileSystem, FtpServerOptions serverOptions,string? args)
+        public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
             if (args == null || args.Length == 0)
                 return Task.FromResult(UnknownCommandParameter());
