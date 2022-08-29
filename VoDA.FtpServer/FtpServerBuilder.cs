@@ -28,18 +28,30 @@ namespace VoDA.FtpServer
             _serverAccessControl = new FtpServerAccessControlOptions();
         }
 
+        /// <summary>
+        /// Configures the operation of the log system.
+		/// </summary>
+		/// <returns>A builder object.</returns>
         public FtpServerBuilder Log(Action<IFtpServerLogOptions> config)
         {
             config?.Invoke(_serverLogOptions);
             return this;
         }
 
+        /// <summary>
+        /// Configures the operation of the server listener.
+        /// </summary>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder ListenerSettings(Action<IFtpServerOptions> config)
         {
             runAndValid(config, _serverOptions);
             return this;
         }
 
+        /// <summary>
+        /// Configures the operation of the authorization.
+        /// </summary>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder Authorization(Action<IFtpServerAuthorizationOptions> config)
         {
             var data = new FtpServerAuthorizationOptions();
@@ -49,12 +61,21 @@ namespace VoDA.FtpServer
             return this;
         }
 
+        /// <summary>
+        /// Configures the operation of the authorization.
+        /// </summary>
+        /// <typeparam name="T">Must inherit from <see cref="AuthorizationOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder Authorization<T>() where T : AuthorizationOptionsContext, new()
         {
             _serverAuthorization = new T();
             return this;
         }
 
+        /// <summary>
+        /// Configures work with certificates.
+        /// </summary>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder Certificate(Action<IFtpServerCertificateOptions> config)
         {
             var data = new FtpServerCertificateOptions();
@@ -91,12 +112,21 @@ namespace VoDA.FtpServer
             return this;
         }
 
+        /// <summary>
+        /// Configures work with certificates.
+        /// </summary>
+        /// <typeparam name="T">Must inherit from <see cref="CertificateOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder Certificate<T>() where T : CertificateOptionsContext, new()
         {
             _serverCertificate = new T();
             return this;
         }
 
+        /// <summary>
+        /// Configures work with the file system.
+        /// </summary>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder FileSystem(Action<IFtpServerFileSystemOptions> config)
         {
             var data = new FtpServerFileSystemOptions();
@@ -106,12 +136,21 @@ namespace VoDA.FtpServer
             return this;
         }
 
+        /// <summary>
+        /// Configures work with the file system.
+        /// </summary>
+        /// <typeparam name="T">Must inherit from <see cref="FileSystemOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder FileSystem<T>() where T : FileSystemOptionsContext, new()
         {
             _serverFileSystemOptions = new T();
             return this;
         }
 
+        /// <summary>
+        /// Configures access to the server.
+        /// </summary>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder AccessControl(Action<IFtpServerAccessControlOptions> config)
         {
             var data = new FtpServerAccessControlOptions();
@@ -120,12 +159,22 @@ namespace VoDA.FtpServer
             return this;
         }
 
+        /// <summary>
+        /// Configures access to the server.
+        /// </summary>
+        /// <typeparam name="T">Must inherit from <see cref="AccessControlOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder AccessControl<T>() where T : AccessControlOptionsContext, new()
         {
             _serverAccessControl = new T();
             return this;
         }
 
+        /// <summary>
+        /// Creates a server instance.
+        /// </summary>
+        /// <returns>The interface <see cref="IFtpServerControl"/> for managing the server.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public IFtpServerControl Build()
         {
             if (_serverFileSystemOptions == null)

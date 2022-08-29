@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using VoDA.FtpServer.Delegates;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -16,10 +16,10 @@ namespace VoDA.FtpServer.Controllers
 
         public int Count => _sessions.Count;
 
-        public event Action<IFtpClient, int>? OnNewConnection;
-        public event Action<IFtpClient, int>? OnCloseConnection;
-        public event Action<IFtpClient, int, long, long>? OnUploadProgress;
-        public event Action<IFtpClient, int, long, long>? OnDownloadProgress;
+        public event ChangeConnectionStatusDelegate? OnNewConnection;
+        public event ChangeConnectionStatusDelegate? OnCloseConnection;
+        public event ClientFileProcessingDelegate? OnUploadProgress;
+        public event ClientFileProcessingDelegate? OnDownloadProgress;
 
         public int Add(FtpClient value)
         {

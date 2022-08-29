@@ -1,18 +1,45 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using VoDA.FtpServer.Delegates;
 
 namespace VoDA.FtpServer.Interfaces
 {
+    /// <summary>
+    /// Client session management interface.
+    /// </summary>
     public interface ISessionsController : IEnumerable
     {
-        public event Action<IFtpClient, int>? OnNewConnection;
-        public event Action<IFtpClient, int>? OnCloseConnection;
-        public event Action<IFtpClient, int, long, long>? OnUploadProgress;
-        public event Action<IFtpClient, int, long, long>? OnDownloadProgress;
+        /// <summary>
+        /// Called upon new connection.
+        /// </summary>
+        public event ChangeConnectionStatusDelegate? OnNewConnection;
+        /// <summary>
+        /// Called after the connection is closed.
+        /// </summary>
+        public event ChangeConnectionStatusDelegate? OnCloseConnection;
+        /// <summary>
+        /// Called every time the server receives part of the user's file.
+        /// </summary>
+        public event ClientFileProcessingDelegate? OnUploadProgress;
+        /// <summary>
+        /// Called every time the server sends a part of the file to the user.
+        /// </summary>
+        public event ClientFileProcessingDelegate? OnDownloadProgress;
+        /// <summary>
+        /// List of active sessions.
+        /// </summary>
         public IReadOnlyDictionary<int, IFtpClient> Sessions { get; }
         public IFtpClient this[int id] { get; }
+        /// <summary>
+        /// Number of active sessions.
+        /// </summary>
         public int Count { get; }
+        /// <summary>
+        /// Kill the selected session.
+        /// </summary>
+        /// <param name="id">Session Id.</param>
+        /// <returns><see cref="true"/> if closed successfully, else <see cref="false"/>.</returns>
         public bool Kik(int id);
     }
 }

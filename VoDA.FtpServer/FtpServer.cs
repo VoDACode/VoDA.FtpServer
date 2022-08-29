@@ -75,19 +75,29 @@ namespace VoDA.FtpServer
                 {
                     var tcp = _serverSocket.AcceptTcpClient();
                     var sw = new StreamWriter(tcp.GetStream());
-                    IPEndPoint RemoteEndpoint = (IPEndPoint)tcp.Client.RemoteEndPoint;
+                    if (tcp.Client.RemoteEndPoint == null)
+                    {
+                        closeConnection(tcp, sw);
+                        continue;
+                    }
+                    IPEndPoint? RemoteEndpoint = tcp.Client.RemoteEndPoint as IPEndPoint;
+                    if (RemoteEndpoint == null)
+                    {
+                        closeConnection(tcp, sw);
+                        continue;
+                    }
                     if (_serverParameters.serverAccessControl.EnableСonnectionСiltering)
                     {
-                        if (_serverParameters.serverAccessControl.BlacklistMode == _serverParameters.serverAccessControl.Filters.Any(p => p.Address == RemoteEndpoint.Address.Address))
+                        if (_serverParameters.serverAccessControl.BlacklistMode == _serverParameters.serverAccessControl.Filters.Any(p => p.Equals(RemoteEndpoint.Address)))
                         {
-                            closeConnection(tcp, ref sw, "221 Access is denied.");
+                            closeConnection(tcp, sw, "221 Access is denied.");
                             continue;
                         }
                     }
                     if (_serverParameters.serverOptions.MaxConnections > 0
                     && sessionsController.Count >= _serverParameters.serverOptions.MaxConnections)
                     {
-                        closeConnection(tcp, ref sw, "221 The server is full!");
+                        closeConnection(tcp, sw, "221 The server is full!");
                         continue;
                     }
                     var client = new FtpClient(tcp);
@@ -99,14 +109,13 @@ namespace VoDA.FtpServer
             return _handlerTask;
         }
 
-        private void closeConnection(TcpClient tcp, ref StreamWriter sw, string message = null)
+        private void closeConnection(TcpClient tcp, StreamWriter sw, string? message = null)
         {
             if (message != null)
             {
                 sw.WriteLine(message);
                 sw.Flush();
                 sw.Close();
-                sw = null;
             }
             tcp.Close();
         }
