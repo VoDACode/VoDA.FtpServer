@@ -12,9 +12,9 @@ namespace VoDA.FtpServer.Commands
     {
         public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
-            client.StreamWriter?.WriteLine("221 - Extensions supported:");
+            client.StreamWriter?.WriteLine("211 - Extensions supported:");
             client.StreamWriter?.WriteLine(" SIZE");
-            return Task.FromResult(CustomResponse(221, "End"));
+            return Task.FromResult(CustomResponse(211, "END"));
         }
     }
 }
