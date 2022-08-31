@@ -13,7 +13,8 @@ namespace VoDA.FtpServer.Extensions
         {
             int count = 0;
             long total = 0;
-            input.Seek(startIndex, SeekOrigin.Begin);
+            if(input.CanSeek)
+                input.Seek(startIndex, SeekOrigin.Begin);
             if (transferType == TransferType.Image)
             {
                 byte[] buffer = new byte[bufferSize];
@@ -24,7 +25,7 @@ namespace VoDA.FtpServer.Extensions
                         output.Write(buffer, 0, count);
                         output.Flush();
                         total += count;
-                        progressEvent?.Invoke(input.Length, total);
+                        progressEvent?.Invoke(input.CanSeek ? input.Length : 0, total);
                     }
                     catch 
                     {
@@ -43,7 +44,7 @@ namespace VoDA.FtpServer.Extensions
                         {
                             writeStream.Write(buffer, 0, count);
                             total += count;
-                            progressEvent?.Invoke(input.Length, total);
+                            progressEvent?.Invoke(input.CanSeek ? input.Length : 0, total);
                         }
                     }
                 }
