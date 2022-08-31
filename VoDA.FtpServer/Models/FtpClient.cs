@@ -25,6 +25,7 @@ namespace VoDA.FtpServer.Models
         public StreamWriter? StreamWriter { get; set; }
         public ConnectionType ConnectionType { get; set; } = ConnectionType.Active;
         public FileStructureType FileStructureType { get; set; } = FileStructureType.File;
+        public TransferType TransferType { get; set; } = TransferType.Ascii;
         public IPEndPoint? RemoteEndpoint { get; set; }
         public IPEndPoint? DataEndpoint { get; set; }
         public string? RenameFrom { get; set; }
@@ -43,8 +44,6 @@ namespace VoDA.FtpServer.Models
         private string? _root;
         private CancellationTokenSource? _cancellationTokenSource;
 
-        public TransferType TransferType { get; set; }
-        public string? DataConnectionType { get; set; }
         public bool IsAuthorized { get; set; }
         public string Username { get; set; } = String.Empty;
         public string Root

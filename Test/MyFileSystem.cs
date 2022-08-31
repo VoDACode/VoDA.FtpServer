@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
@@ -98,6 +99,11 @@ namespace Test
         public override Stream Upload(IFtpClient client, string path)
         {
             return File.Create(Path.Join(rootPath, path));
+        }
+
+        public override DateTime GetFileModificationTime(IFtpClient client, string path)
+        {
+            return File.GetLastWriteTime(path);
         }
     }
 }

@@ -20,6 +20,7 @@ namespace VoDA.FtpServer.Models
         public event FileSystemGetListDelegate OnGetList;
         public event FileSystemExistDelegate OnExistFoulder;
         public event FileSystemGetFileSizeDelegate OnGetFileSize;
+        public event FileSystemFileModificationTimeDelegate OnGetFileModificationTime;
 
         public override bool Rename(IFtpClient client, string from, string to)
             => OnRename == null ? false : OnRename.Invoke(client, from, to);
@@ -48,6 +49,8 @@ namespace VoDA.FtpServer.Models
         public override long GetFileSize(IFtpClient client, string path)
             => OnGetFileSize == null ? -1 : OnGetFileSize.Invoke(client, path);
 
+        public override DateTime GetFileModificationTime(IFtpClient client, string path)
+            => OnGetFileModificationTime.Invoke(client, path);
         public void Valid()
         {
             if (OnAppend == null)

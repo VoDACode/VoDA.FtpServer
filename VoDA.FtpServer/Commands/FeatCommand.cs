@@ -14,6 +14,7 @@ namespace VoDA.FtpServer.Commands
         {
             client.StreamWriter?.WriteLine("211 - Extensions supported:");
             client.StreamWriter?.WriteLine(" SIZE");
+            client.StreamWriter?.WriteLine(" MDTM");
             return Task.FromResult(CustomResponse(211, "END"));
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using VoDA.FtpServer.Interfaces;
@@ -96,5 +97,13 @@ namespace VoDA.FtpServer.Contexts
         /// <param name="path">The full path to the file.</param>
         /// <returns>The file size</returns>
         public abstract long GetFileSize(IFtpClient client, string path);
+
+        /// <summary>
+        /// Handles a request to retrieve the modified date of a file.
+        /// </summary>
+        /// <param name="client">An instance of the client making the request.</param>
+        /// <param name="path">The full path to the file.</param>
+        /// <returns>File modification date.</returns>
+        public abstract DateTime GetFileModificationTime(IFtpClient client, string path);
     }
 }

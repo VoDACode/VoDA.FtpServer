@@ -58,5 +58,10 @@ namespace VoDA.FtpServer.Interfaces
         /// Handles a file size request.
         /// </summary>
         public event FileSystemGetFileSizeDelegate OnGetFileSize;
+
+        /// <summary>
+        /// Handles a request to retrieve the modified date of a file.
+        /// </summary>
+        public event FileSystemFileModificationTimeDelegate OnGetFileModificationTime;
     }
 }
