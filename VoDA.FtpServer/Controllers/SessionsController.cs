@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using VoDA.FtpServer.Delegates;
 using VoDA.FtpServer.Interfaces;
@@ -21,6 +20,11 @@ namespace VoDA.FtpServer.Controllers
         public event ClientFileProcessingDelegate? OnUploadProgress;
         public event ClientFileProcessingDelegate? OnDownloadProgress;
 
+        public event ClientDataProcessingStatusDelegate? OnStartUpload;
+        public event ClientDataProcessingStatusDelegate? OnCompleteUpload;
+        public event ClientDataProcessingStatusDelegate? OnStartDownload;
+        public event ClientDataProcessingStatusDelegate? OnCompleteDownload;
+
         public int Add(FtpClient value)
         {
             var id = _sessions.Count;
@@ -29,6 +33,10 @@ namespace VoDA.FtpServer.Controllers
             value.OnEndProcessing += (item) => OnCloseConnection?.Invoke(item, id);
             value.OnUploadProgress += (item, len, done) => OnUploadProgress?.Invoke(item, id, len, done);
             value.OnDownloadProgress += (item, len, done) => OnDownloadProgress?.Invoke(item, id, len, done);
+            value.OnStartUpload += (item, file) => OnStartUpload?.Invoke(item, file);
+            value.OnCompleteUpload += (item, file) => OnCompleteUpload?.Invoke(item, file);
+            value.OnStartDownload += (item, file) => OnStartDownload?.Invoke(item, file);
+            value.OnCompleteDownload += (item, file) => OnCompleteDownload?.Invoke(item, file);
             return id;
         }
 

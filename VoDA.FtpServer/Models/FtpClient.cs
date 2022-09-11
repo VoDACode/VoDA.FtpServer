@@ -12,7 +12,7 @@ using VoDA.FtpServer.Enums;
 using VoDA.FtpServer.Extensions;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Responses;
-using VoDA.FtpServer.Contexts;
+using VoDA.FtpServer.Delegates;
 
 namespace VoDA.FtpServer.Models
 {
@@ -58,6 +58,11 @@ namespace VoDA.FtpServer.Models
         public event Action<FtpClient, string>? OnLog;
         public event Action<FtpClient, long, long>? OnUploadProgress;
         public event Action<FtpClient, long, long>? OnDownloadProgress;
+
+        public event ClientDataProcessingStatusDelegate? OnStartUpload;
+        public event ClientDataProcessingStatusDelegate? OnCompleteUpload;
+        public event ClientDataProcessingStatusDelegate? OnStartDownload;
+        public event ClientDataProcessingStatusDelegate? OnCompleteDownload;
 
         public FtpClient(TcpClient tcpSocket)
         {
@@ -166,6 +171,7 @@ namespace VoDA.FtpServer.Models
         {
             using (Stream fs = configParameters.FileSystemOptions.Download(this, path))
             {
+                OnStartDownload?.Invoke(this, path);
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = fs.CopyToStream(stream, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
                 {
@@ -174,6 +180,7 @@ namespace VoDA.FtpServer.Models
                 if (_cancellationTokenSource.IsCancellationRequested)
                     _lastPoint = 0;
             }
+            OnCompleteDownload?.Invoke(this, path);
             return new CustomResponse("Closing data connection, file transfer successful", 226);
         }
 
@@ -181,6 +188,7 @@ namespace VoDA.FtpServer.Models
         {
             using (Stream fs = configParameters.FileSystemOptions.Upload(this, path))
             {
+                OnStartUpload?.Invoke(this, path);
                 _cancellationTokenSource = new CancellationTokenSource();
                 _lastPoint = stream.CopyToStream(fs, BufferSize, TransferType, _cancellationTokenSource.Token, _lastPoint, (long len, long done) =>
                 {
@@ -189,6 +197,7 @@ namespace VoDA.FtpServer.Models
                 if (_cancellationTokenSource.IsCancellationRequested)
                     _lastPoint = 0;
             }
+            OnCompleteUpload?.Invoke(this, path);
             return new CustomResponse("Closing data connection, file transfer successful", 226);
         }
 

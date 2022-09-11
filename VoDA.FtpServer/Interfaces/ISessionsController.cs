@@ -14,27 +14,53 @@ namespace VoDA.FtpServer.Interfaces
         /// Called upon new connection.
         /// </summary>
         public event ChangeConnectionStatusDelegate? OnNewConnection;
+
         /// <summary>
         /// Called after the connection is closed.
         /// </summary>
         public event ChangeConnectionStatusDelegate? OnCloseConnection;
+
         /// <summary>
         /// Called every time the server receives part of the user's file.
         /// </summary>
         public event ClientFileProcessingDelegate? OnUploadProgress;
+
         /// <summary>
         /// Called every time the server sends a part of the file to the user.
         /// </summary>
         public event ClientFileProcessingDelegate? OnDownloadProgress;
+
+        /// <summary>
+        /// Called when the user begins to upload a file. 
+        /// </summary>
+        public event ClientDataProcessingStatusDelegate OnStartUpload;
+
+        /// <summary>
+        /// Called when the user finished uploading a file.
+        /// </summary>
+        public event ClientDataProcessingStatusDelegate OnCompleteUpload;
+
+        /// <summary>
+        /// Called when the user begins to download a file. 
+        /// </summary>
+        public event ClientDataProcessingStatusDelegate OnStartDownload;
+
+        /// <summary>
+        /// Called when the user finished downloading a file.
+        /// </summary>
+        public event ClientDataProcessingStatusDelegate OnCompleteDownload;
+
         /// <summary>
         /// List of active sessions.
         /// </summary>
         public IReadOnlyDictionary<int, IFtpClient> Sessions { get; }
         public IFtpClient this[int id] { get; }
+
         /// <summary>
         /// Number of active sessions.
         /// </summary>
         public int Count { get; }
+
         /// <summary>
         /// Kill the selected session.
         /// </summary>

@@ -31,8 +31,27 @@ namespace Test
                 .Build();
             server.Sessions.OnNewConnection += Sessions_OnNewConnection;
             server.Sessions.OnCloseConnection += Sessions_OnCloseConnection;
+
+            server.Sessions.OnStartDownload += Sessions_OnStartDownload;
+            server.Sessions.OnCompleteDownload += Sessions_OnCompleteDownload;
+            server.Sessions.OnStartUpload += Sessions_OnStartUpload;
+            server.Sessions.OnCompleteUpload += Sessions_OnCompleteUpload;
+
             server.StartAsync(System.Threading.CancellationToken.None).Wait();
         }
+
+        private static void Sessions_OnCompleteUpload(IFtpClient client, string file)
+        => Console.WriteLine($"[{client.Username}] UPLOAD_END '{file}'");
+
+        private static void Sessions_OnStartUpload(IFtpClient client, string file)
+        => Console.WriteLine($"[{client.Username}] UPLOAD_START '{file}'");
+
+        private static void Sessions_OnCompleteDownload(IFtpClient client, string file)
+        => Console.WriteLine($"[{client.Username}] DOWNLOAD_END '{file}'");
+
+        private static void Sessions_OnStartDownload(IFtpClient client, string file)
+        => Console.WriteLine($"[{client.Username}] DOWNLOAD_START '{file}'");
+
 
         private static void Sessions_OnCloseConnection(IFtpClient client, int id)
         {
