@@ -9,6 +9,7 @@ This document is divided into sections for ease of navigation:
 - [Certificate](#certificate)
 - [Authorization](#authorization)
 - [FileSystem](#filesystem)
+- [AccessControl](#accesscontrol)
 
 ## Configuration principle
 
@@ -170,3 +171,32 @@ Sections are described below.
 >**Parameters:** (```VoDA.FtpServer.Interfaces.IFtpClient``` client, ```System.String``` path)\
 >**Return:** ```System.Int64```\
 >**Description:** Called when a file size request is received.
+
+> ### ```OnGetFileModificationTime```
+>
+>**Type:** *event* ```VoDA.FtpServer.Delegates.FileSystemFileModificationTimeDelegate```\
+>**Parameters:** (```VoDA.FtpServer.Interfaces.IFtpClient``` client, ```System.String``` path)\
+>**Return:** ```System.DateTime```\
+>**Description:** Handles a request to retrieve the modified date of a file.
+
+## **AccessControl**
+
+*Configures access to the server.*
+
+> ### ```EnableСonnectionСiltering```
+>
+>**Type:** ```System.Boolean```\
+>**Default:** ```false``` \
+>**Description:** Enables or disables the connection filter.
+
+> ### ```BlacklistMode```
+>
+>**Type:** ```System.Boolean```\
+>**Default:** ```true``` \
+>**Description:** Changes the filter mode. true - ban addresses are listed, false - allow addresses are listed.
+
+> ### ```Filters```
+>
+>**Type:** ```System.Collections.Generic.List<System.Net.IPAddress>```\
+>**Default:** ```Empty``` \
+>**Description:** List of addresses.

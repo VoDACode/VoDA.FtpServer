@@ -49,6 +49,7 @@ var server = new FtpServerBuilder()
         fs.OnDeleteFolder += (client, path) => {...};  // remove folder event
         fs.OnUpload += (client, path) => {...}; // upload file event
         fs.OnGetFileSize += (client, path) => {...};    // get file size event
+        fs.OnGetFileModificationTime += (client, path) => {...};    // returns the last modified date of the file
     })
     .Build();
 // Start FTP-serer
