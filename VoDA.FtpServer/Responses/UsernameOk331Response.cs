@@ -2,7 +2,7 @@
 {
     internal class UsernameOk331Response : BaseResponse
     {
-        public override string Text => "Username ok, need password";
+        public override string Text => "Please, specify the password.";
 
         public override int Code => 331;
     }
