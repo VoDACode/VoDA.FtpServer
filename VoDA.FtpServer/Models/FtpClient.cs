@@ -13,6 +13,7 @@ using VoDA.FtpServer.Extensions;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Responses;
 using VoDA.FtpServer.Delegates;
+using System.Text;
 
 namespace VoDA.FtpServer.Models
 {
@@ -97,7 +98,7 @@ namespace VoDA.FtpServer.Models
                     var command = new FtpCommand(line);
                     logInfo(command.ToString(), true);
                     var response = await FtpCommandHandler.Instance.HandleCommand(command, this, configParameters);
-                    logInfo($"{response.Code} {response.Text}", false);
+                    logInfo(response.ToString(), false);
                     if (!eventAlertConnection && IsAuthorized)
                     {
                         OnConnection?.Invoke(this);
@@ -107,7 +108,7 @@ namespace VoDA.FtpServer.Models
                         break;
                     else
                     {
-                        StreamWriter?.WriteLine($"{response.Code} {response.Text}");
+                        StreamWriter?.WriteLine(response.ToString());
                         StreamWriter?.Flush();
                         if (response.Code == 221)
                             break;
@@ -215,7 +216,7 @@ namespace VoDA.FtpServer.Models
 
         public IFtpResult ListOperation(NetworkStream stream, string path)
         {
-            StreamWriter sw = new StreamWriter(stream);
+            StreamWriter sw = new StreamWriter(stream, Encoding.ASCII);
             var list = configParameters.FileSystemOptions.List(this, path);
             foreach (var item in list.Item1)
             {

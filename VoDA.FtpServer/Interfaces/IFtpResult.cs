@@ -4,5 +4,6 @@
     {
         public string Text { get; }
         public int Code { get; }
+        public string ToString();
     }
 }
