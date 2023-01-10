@@ -17,7 +17,7 @@ using System.Text;
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpClient : IFtpClient
+    public class FtpClient : IFtpClient
     {
         public TcpClient? TcpSocket { get; set; }
         public TcpClient? DataClient { get; set; }

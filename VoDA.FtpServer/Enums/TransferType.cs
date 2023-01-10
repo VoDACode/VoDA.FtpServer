@@ -1,6 +1,6 @@
 ﻿namespace VoDA.FtpServer.Enums
 {
-    enum TransferType
+    public enum TransferType
     {
         Ascii,
         Image

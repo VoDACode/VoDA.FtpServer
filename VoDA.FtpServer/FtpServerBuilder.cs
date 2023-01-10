@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using VoDA.FtpServer.Models;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Contexts;
+using VoDA.FtpServer.Commands;
 
 namespace VoDA.FtpServer
 {
@@ -167,6 +168,17 @@ namespace VoDA.FtpServer
         public FtpServerBuilder AccessControl<T>() where T : AccessControlOptionsContext, new()
         {
             _serverAccessControl = new T();
+            return this;
+        }
+
+
+        /// <summary>
+        /// Adds a custom command.
+        /// </summary>
+        /// <returns>A builder object.</returns>
+        public FtpServerBuilder AddCommand<T>() where T : BaseCommand
+        {
+            FtpCommandHandler.Instance.Add<T>();
             return this;
         }
 

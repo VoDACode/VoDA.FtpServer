@@ -2,7 +2,7 @@
 
 namespace VoDA.FtpServer.Models
 {
-    internal class FtpClientParameters
+    public class FtpClientParameters
     {
         public FtpServerOptions ServerOptions { get; }
         public AuthorizationOptionsContext AuthorizationOptions { get; }

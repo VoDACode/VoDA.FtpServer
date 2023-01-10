@@ -7,7 +7,7 @@ using VoDA.FtpServer.Responses;
 
 namespace VoDA.FtpServer.Commands
 {
-    internal abstract class BaseCommand
+    public abstract class BaseCommand
     {
         public abstract Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args);
 

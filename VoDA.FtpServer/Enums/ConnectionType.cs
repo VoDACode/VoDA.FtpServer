@@ -1,6 +1,6 @@
 ﻿namespace VoDA.FtpServer.Enums
 {
-    enum ConnectionType
+    public enum ConnectionType
     {
         Passive,
         Active,

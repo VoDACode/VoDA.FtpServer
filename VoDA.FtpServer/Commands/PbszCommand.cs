@@ -14,7 +14,7 @@ namespace VoDA.FtpServer.Commands
             int size = 0;
             if(!int.TryParse(args, out size))
                 return Task.FromResult(CustomResponse(500, ""));
-            return Task.FromResult(Ok());
+            return Task.FromResult(CustomResponse(200, "PBSZ=0"));
         }
     }
 }

@@ -5,7 +5,7 @@ using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer.Models
 {
-    internal class DataConnectionOperation
+    public class DataConnectionOperation
     {
         public Func<NetworkStream, string, IFtpResult> Func { get; }
         public string Arguments { get; }

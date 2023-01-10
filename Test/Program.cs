@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-
+using Test.MyCommands;
 using VoDA.FtpServer;
 using VoDA.FtpServer.Interfaces;
 
@@ -28,6 +26,7 @@ namespace Test
                 })
                 .Authorization<MyAuthorization>()
                 .FileSystem<MyFileSystem>()
+                .AddCommand<GetTime>()
                 .Build();
             server.Sessions.OnNewConnection += Sessions_OnNewConnection;
             server.Sessions.OnCloseConnection += Sessions_OnCloseConnection;

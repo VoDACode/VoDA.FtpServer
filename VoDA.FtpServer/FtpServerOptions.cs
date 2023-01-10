@@ -5,7 +5,7 @@ using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer
 {
-    internal class FtpServerOptions : IFtpServerOptions, IValidConfig
+    public class FtpServerOptions : IFtpServerOptions, IValidConfig
     {
         public int Port { get; set; } = 21;
         public int MaxConnections { get; set; }

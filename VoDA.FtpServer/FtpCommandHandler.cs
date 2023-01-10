@@ -18,8 +18,8 @@ namespace VoDA.FtpServer
         private static FtpCommandHandler? _instance;
         public static FtpCommandHandler Instance => _instance ?? (_instance = new FtpCommandHandler());
 
-        private IReadOnlyDictionary<string, BaseCommand> Commands { get; }
-        private IReadOnlyList<string> VerificationCommands { get; }
+        private readonly Dictionary<string, BaseCommandDetails> _commands = new();
+        public IReadOnlyDictionary<string, BaseCommandDetails> Commands => _commands;
 
         private FtpCommandHandler()
         {
@@ -27,8 +27,6 @@ namespace VoDA.FtpServer
               .Where(t => string.Equals(t.Namespace, "VoDA.FtpServer.Commands", StringComparison.Ordinal) 
                           && t.GetCustomAttribute(typeof(FtpCommandAttribute)) != null)
               .ToArray();
-            var _commands = new Dictionary<string, BaseCommand>();
-            var _verificationCommands = new List<string>();
             foreach (var command in commands)
             {
                 var obj = Activator.CreateInstance(command) as BaseCommand;
@@ -37,22 +35,46 @@ namespace VoDA.FtpServer
                 var key = command.GetCustomAttribute<FtpCommandAttribute>();
                 if (key == null)
                     throw new ArgumentNullException($"FtpCommandAttribute\n Type: {command.FullName}");
-                _commands.Add(key.Command, obj);
                 var auth = command.GetCustomAttribute<AuthorizeAttribute>();
-                if (!(auth is null))
-                    _verificationCommands.Add(key.Command);
+                _commands.Add(key.Command, new BaseCommandDetails(obj, auth is not null, false));
             }
-            Commands = _commands;
-            VerificationCommands = _verificationCommands;
         }
 
         public async Task<IFtpResult> HandleCommand(FtpCommand command, FtpClient client, FtpClientParameters configParameters)
         {
             if (!Commands.ContainsKey(command.Command))
                 return new UnknownCommand502Response();
-            if (configParameters.AuthorizationOptions.UseAuthorization && !client.IsAuthorized && !VerificationCommands.Any(p => p == command.Command))
+            var commandDetails = Commands[command.Command];
+            if (configParameters.AuthorizationOptions.UseAuthorization && !client.IsAuthorized && !commandDetails.NeedVerification)
                 return new NotLoggedIn530Response();
-            return await Commands[command.Command].Invoke(client, configParameters, command.Arguments);
+            return await Commands[command.Command].Command.Invoke(client, configParameters, command.Arguments);
+        }
+
+        public void Add<T>() where T : BaseCommand
+        {
+            var obj = Activator.CreateInstance(typeof(T)) as BaseCommand;
+            if(obj == null)
+                throw new Exception($"Can't create instance of {typeof(T).FullName}");
+            var key = typeof(T).GetCustomAttribute<FtpCommandAttribute>();
+            if(key is null)
+                throw new ArgumentNullException($"FtpCommandAttribute\n Type: {typeof(T).FullName}");
+            if (Commands.ContainsKey(key.Command))
+                throw new ArgumentException($"Command '{key.Command}' already exists");
+            var auth = typeof(T).GetCustomAttribute<AuthorizeAttribute>();
+            _commands.Add(key.Command, new BaseCommandDetails(obj, auth is not null, true));
+        }
+    }
+    
+    internal class BaseCommandDetails
+    {
+        public BaseCommand Command { get; }
+        public bool IsCustom { get; } = false;
+        public bool NeedVerification { get; }
+        public BaseCommandDetails(BaseCommand command, bool needVerification, bool isCustom = false)
+        {
+            Command = command;
+            NeedVerification = needVerification;
+            IsCustom = isCustom;
         }
     }
 }
