@@ -83,7 +83,7 @@ namespace VoDA.FtpServer
                         CloseConnection(tcp, sw);
                         continue;
                     }
-                    if (_serverParameters.serverAccessControl.EnableСonnectionСiltering)
+                    if (_serverParameters.serverAccessControl.EnableConnectionFiltering)
                     {
                         if (_serverParameters.serverAccessControl.BlacklistMode == _serverParameters.serverAccessControl.Filters.Any(p => p.Equals(remoteEndpoint.Address)))
                         {

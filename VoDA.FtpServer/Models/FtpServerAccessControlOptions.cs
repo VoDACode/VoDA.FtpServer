@@ -8,7 +8,7 @@ namespace VoDA.FtpServer.Models
 {
     internal class FtpServerAccessControlOptions : Contexts.AccessControlOptionsContext, IFtpServerAccessControlOptions
     {
-        public override bool EnableСonnectionСiltering { get; set; } = false;
+        public override bool EnableConnectionFiltering { get; set; } = false;
 
         public override List<IPAddress> Filters { get; } = new List<IPAddress>();
 

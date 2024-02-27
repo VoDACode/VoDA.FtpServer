@@ -8,7 +8,7 @@ namespace VoDA.FtpServer.Contexts
         /// <summary>
         /// Enables or disables the connection filter.
         /// </summary>
-        public abstract bool EnableСonnectionСiltering { get; set; }
+        public abstract bool EnableConnectionFiltering { get; set; }
         /// <summary>
         /// Changes the filter mode.
         /// <list type="table">true - Ban addresses are listed</list>
