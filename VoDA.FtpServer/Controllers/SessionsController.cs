@@ -8,8 +8,8 @@ namespace VoDA.FtpServer.Controllers
 {
     internal class SessionsController : ISessionsController
     {
-        private Dictionary<int, FtpClient> _sessions = new Dictionary<int, FtpClient>();
-        public IReadOnlyDictionary<int, IFtpClient> Sessions => (IReadOnlyDictionary<int, IFtpClient>)_sessions;
+        private readonly Dictionary<int, IFtpClient> _sessions = new();
+        public IReadOnlyDictionary<int, IFtpClient> Sessions => _sessions;
 
         public IFtpClient this[int id] => _sessions[id];
 
