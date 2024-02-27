@@ -8,7 +8,7 @@ namespace VoDA.FtpServer.Interfaces
         /// <summary>
         ///     Enables or disables the connection filter.
         /// </summary>
-        public bool EnableСonnectionСiltering { get; set; }
+        public bool EnableConnectionFiltering { get; set; }
 
         /// <summary>
         ///     Changes the filter mode.
