@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
-
+using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
-using VoDA.FtpServer.Attributes;
-using VoDA.FtpServer.Contexts;
 
 namespace VoDA.FtpServer.Commands
 {

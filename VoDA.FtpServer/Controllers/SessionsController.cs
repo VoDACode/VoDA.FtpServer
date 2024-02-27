@@ -8,8 +8,8 @@ namespace VoDA.FtpServer.Controllers
 {
     internal class SessionsController : ISessionsController
     {
-        private Dictionary<int, FtpClient> _sessions = new Dictionary<int, FtpClient>();
-        public IReadOnlyDictionary<int, IFtpClient> Sessions => (IReadOnlyDictionary<int, IFtpClient>)_sessions;
+        private readonly Dictionary<int, IFtpClient> _sessions = new();
+        public IReadOnlyDictionary<int, IFtpClient> Sessions => _sessions;
 
         public IFtpClient this[int id] => _sessions[id];
 
@@ -25,21 +25,6 @@ namespace VoDA.FtpServer.Controllers
         public event ClientDataProcessingStatusDelegate? OnStartDownload;
         public event ClientDataProcessingStatusDelegate? OnCompleteDownload;
 
-        public int Add(FtpClient value)
-        {
-            var id = _sessions.Count;
-            _sessions.Add(id, value);
-            value.OnConnection += (item) => OnNewConnection?.Invoke(item, id);
-            value.OnEndProcessing += (item) => OnCloseConnection?.Invoke(item, id);
-            value.OnUploadProgress += (item, len, done) => OnUploadProgress?.Invoke(item, id, len, done);
-            value.OnDownloadProgress += (item, len, done) => OnDownloadProgress?.Invoke(item, id, len, done);
-            value.OnStartUpload += (item, file) => OnStartUpload?.Invoke(item, file);
-            value.OnCompleteUpload += (item, file) => OnCompleteUpload?.Invoke(item, file);
-            value.OnStartDownload += (item, file) => OnStartDownload?.Invoke(item, file);
-            value.OnCompleteDownload += (item, file) => OnCompleteDownload?.Invoke(item, file);
-            return id;
-        }
-
         public IEnumerator GetEnumerator()
         {
             return _sessions.GetEnumerator();
@@ -52,6 +37,21 @@ namespace VoDA.FtpServer.Controllers
             _sessions[id].Kik();
             _sessions.Remove(id);
             return true;
+        }
+
+        public int Add(FtpClient value)
+        {
+            var id = _sessions.Count;
+            _sessions.Add(id, value);
+            value.OnConnection += item => OnNewConnection?.Invoke(item, id);
+            value.OnEndProcessing += item => OnCloseConnection?.Invoke(item, id);
+            value.OnUploadProgress += (item, len, done) => OnUploadProgress?.Invoke(item, id, len, done);
+            value.OnDownloadProgress += (item, len, done) => OnDownloadProgress?.Invoke(item, id, len, done);
+            value.OnStartUpload += (item, file) => OnStartUpload?.Invoke(item, file);
+            value.OnCompleteUpload += (item, file) => OnCompleteUpload?.Invoke(item, file);
+            value.OnStartDownload += (item, file) => OnStartDownload?.Invoke(item, file);
+            value.OnCompleteDownload += (item, file) => OnCompleteDownload?.Invoke(item, file);
+            return id;
         }
     }
 }

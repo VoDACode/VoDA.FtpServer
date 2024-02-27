@@ -3,6 +3,6 @@
     public enum ConnectionType
     {
         Passive,
-        Active,
+        Active
     }
 }

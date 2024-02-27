@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-
 using VoDA.FtpServer.Attributes;
-using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -16,9 +14,12 @@ namespace VoDA.FtpServer.Commands
             args = NormalizationPath(args);
             args = Path.Join(client.Root, args);
             args = NormalizationPath(args);
-            if (!configParameters.FileSystemOptions.Create(client, args))
-                return Task.FromResult(CustomResponse(550, "Directory already exists"));
-            return Task.FromResult(CustomResponse(250, "Requested file action okay, completed"));
+
+            var result = configParameters.FileSystemOptions.Create(client, args)
+                ? CustomResponse(250, "Requested file action okay, completed")
+                : CustomResponse(550, "Directory already exists");
+
+            return Task.FromResult(result);
         }
     }
 }

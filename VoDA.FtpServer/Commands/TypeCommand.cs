@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
-
 using VoDA.FtpServer.Attributes;
-using VoDA.FtpServer.Contexts;
+using VoDA.FtpServer.Enums;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -14,34 +13,30 @@ namespace VoDA.FtpServer.Commands
         {
             if (args == null)
                 return Task.FromResult(UnknownCommandParameter());
-            string[] splitArgs = args.Split(' ');
-            IFtpResult result = Error();
+            var splitArgs = args.Split(' ');
+            IFtpResult result;
             switch (splitArgs[0])
             {
                 case "A":
-                    client.TransferType = Enums.TransferType.Ascii;
+                    client.TransferType = TransferType.Ascii;
                     result = CustomResponse(200, "Type set to A");
                     break;
                 case "I":
-                    client.TransferType = Enums.TransferType.Image;
+                    client.TransferType = TransferType.Image;
                     result = CustomResponse(200, "Type set to I");
                     break;
                 default:
                     result = UnknownCommandParameter();
                     break;
             }
-            if(splitArgs.Length > 1)
-                switch(splitArgs[1])
-                {
-                    case "N":
-                        result = Ok();
-                        break;
-                    case "T":
-                    case "C":
-                    default:
-                        result = UnknownCommandParameter();
-                        break;
-                }
+
+            if (splitArgs.Length <= 1) return Task.FromResult(result);
+
+            result = splitArgs[1] switch
+            {
+                "N" => Ok(),
+                _ => UnknownCommandParameter()
+            };
             return Task.FromResult(result);
         }
     }

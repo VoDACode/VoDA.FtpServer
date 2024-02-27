@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
-
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Enums;
-using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -24,6 +22,7 @@ namespace VoDA.FtpServer.Commands
                 default:
                     return Task.FromResult(CustomResponse(501, $"Parameter {args} not recognized"));
             }
+
             return Task.FromResult(Ok());
         }
     }

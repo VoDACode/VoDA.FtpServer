@@ -1,33 +1,30 @@
-﻿using Serilog;
-using System;
+﻿using System;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Serilog;
 using VoDA.FtpServer.Controllers;
-using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
-using System.Net;
-using System.Linq;
 
 namespace VoDA.FtpServer
 {
     internal class FtpServer : IFtpServerControl
     {
-        private TcpListener _serverSocket;
-        FtpServerParameters _serverParameters;
-        private bool _isEnable = false;
+        private readonly FtpServerParameters _serverParameters;
+        private readonly TcpListener _serverSocket;
+        private readonly SessionsController _sessionsController = new();
         private Task? _handlerTask;
-        private CancellationToken cancellation;
-        private SessionsController sessionsController = new SessionsController();
-        public ISessionsController Sessions => sessionsController;
+        private bool _isEnable;
 
         public FtpServer(FtpServerParameters parameters)
         {
             _serverParameters = parameters;
-            _serverSocket = new TcpListener(_serverParameters.serverOptions.ServerIp, _serverParameters.serverOptions.Port);
+            _serverSocket = new TcpListener(_serverParameters.serverOptions.ServerIp,
+                _serverParameters.serverOptions.Port);
             var logger = new LoggerConfiguration();
             if (_serverParameters.serverLogOptions.Level != LogLevel.None)
                 logger.WriteTo.Console();
@@ -38,36 +35,39 @@ namespace VoDA.FtpServer
             Log.Logger = logger.CreateLogger();
         }
 
+        public ISessionsController Sessions => _sessionsController;
+
         public Task StartAsync(CancellationToken token)
         {
             if (_isEnable)
-                throw new Exception("Server is runing.");
+                throw new Exception("Server is running.");
             _isEnable = true;
-            cancellation = token;
             _serverSocket.Start();
             Log.Information($"Server is running (ftp://localhost:{_serverParameters.serverOptions.Port}/)");
             if (_serverParameters.serverOptions.MaxConnections > 0)
             {
-                Log.Information($"Enabled limited connections mode.");
+                Log.Information("Enabled limited connections mode.");
                 Log.Information($"Max count connections = {_serverParameters.serverOptions.MaxConnections}");
             }
-            if (_serverParameters.serverOptions.ServerIp != System.Net.IPAddress.Any)
+
+            if (!IPAddress.Any.Equals(_serverParameters.serverOptions.ServerIp))
             {
-                Log.Information($"Enabled filter connections mode.");
+                Log.Information("Enabled filter connections mode.");
                 Log.Information($"Waiting connection from {_serverParameters.serverOptions.ServerIp}");
             }
-            return handler(token);
+
+            return Handler(token);
         }
 
         public Task StopAsync()
         {
             if (!_isEnable)
-                throw new Exception("Server isn`t runing.");
+                throw new Exception("Server isn`t running.");
             _isEnable = false;
             return Task.CompletedTask;
         }
 
-        private Task handler(CancellationToken token)
+        private Task Handler(CancellationToken token)
         {
             _handlerTask = Task.Run(() =>
             {
@@ -77,39 +77,42 @@ namespace VoDA.FtpServer
                     var sw = new StreamWriter(tcp.GetStream());
                     if (tcp.Client.RemoteEndPoint == null)
                     {
-                        closeConnection(tcp, sw);
+                        CloseConnection(tcp, sw);
                         continue;
                     }
-                    IPEndPoint? RemoteEndpoint = tcp.Client.RemoteEndPoint as IPEndPoint;
-                    if (RemoteEndpoint == null)
+
+                    if (tcp.Client.RemoteEndPoint is not IPEndPoint remoteEndpoint)
                     {
-                        closeConnection(tcp, sw);
+                        CloseConnection(tcp, sw);
                         continue;
                     }
-                    if (_serverParameters.serverAccessControl.EnableСonnectionСiltering)
-                    {
-                        if (_serverParameters.serverAccessControl.BlacklistMode == _serverParameters.serverAccessControl.Filters.Any(p => p.Equals(RemoteEndpoint.Address)))
+
+                    if (_serverParameters.serverAccessControl.EnableConnectionFiltering)
+                        if (_serverParameters.serverAccessControl.BlacklistMode ==
+                            _serverParameters.serverAccessControl.Filters.Any(p => p.Equals(remoteEndpoint.Address)))
                         {
-                            closeConnection(tcp, sw, "221 Access is denied.");
+                            CloseConnection(tcp, sw, "221 Access is denied.");
                             continue;
                         }
-                    }
+
                     if (_serverParameters.serverOptions.MaxConnections > 0
-                    && sessionsController.Count >= _serverParameters.serverOptions.MaxConnections)
+                        && _sessionsController.Count >= _serverParameters.serverOptions.MaxConnections)
                     {
-                        closeConnection(tcp, sw, "221 The server is full!");
+                        CloseConnection(tcp, sw, "221 The server is full!");
                         continue;
                     }
+
                     var client = new FtpClient(tcp);
-                    sessionsController.Add(client);
+                    _sessionsController.Add(client);
                     client.HandleClient(_serverParameters);
                 }
+
                 _serverSocket.Stop();
-            });
+            }, token);
             return _handlerTask;
         }
 
-        private void closeConnection(TcpClient tcp, StreamWriter sw, string? message = null)
+        private void CloseConnection(TcpClient tcp, StreamWriter sw, string? message = null)
         {
             if (message != null)
             {
@@ -117,6 +120,7 @@ namespace VoDA.FtpServer
                 sw.Flush();
                 sw.Close();
             }
+
             tcp.Close();
         }
     }
