@@ -13,10 +13,10 @@ namespace VoDA.FtpServer
 
         public void Valid()
         {
-            if (Port <= 0 || Port >= 65536)
-                throw new ArgumentOutOfRangeException("Port");
+            if (Port is <= 0 or >= 65536)
+                throw new ArgumentOutOfRangeException(nameof(FtpServerOptions.Port));
             if (MaxConnections < 0)
-                throw new ArgumentOutOfRangeException("MaxConnections");
+                throw new ArgumentOutOfRangeException(nameof(FtpServerOptions.MaxConnections));
         }
     }
 }
