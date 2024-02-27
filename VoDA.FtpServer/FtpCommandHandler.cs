@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Commands;
-using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 using VoDA.FtpServer.Responses;
@@ -16,7 +15,7 @@ namespace VoDA.FtpServer
     internal class FtpCommandHandler
     {
         private static FtpCommandHandler? _instance;
-        public static FtpCommandHandler Instance => _instance ?? (_instance = new FtpCommandHandler());
+        public static FtpCommandHandler Instance => _instance ??= new FtpCommandHandler();
 
         private readonly Dictionary<string, BaseCommandDetails> _commands = new();
         public IReadOnlyDictionary<string, BaseCommandDetails> Commands => _commands;
@@ -36,7 +35,7 @@ namespace VoDA.FtpServer
                 if (key == null)
                     throw new ArgumentNullException($"FtpCommandAttribute\n Type: {command.FullName}");
                 var auth = command.GetCustomAttribute<AuthorizeAttribute>();
-                _commands.Add(key.Command, new BaseCommandDetails(obj, auth is not null, false));
+                _commands.Add(key.Command, new BaseCommandDetails(obj, auth is not null));
             }
         }
 
@@ -68,7 +67,7 @@ namespace VoDA.FtpServer
     internal class BaseCommandDetails
     {
         public BaseCommand Command { get; }
-        public bool IsCustom { get; } = false;
+        public bool IsCustom { get; }
         public bool NeedVerification { get; }
         public BaseCommandDetails(BaseCommand command, bool needVerification, bool isCustom = false)
         {
