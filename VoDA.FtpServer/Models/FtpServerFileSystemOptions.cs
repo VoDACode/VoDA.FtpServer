@@ -32,7 +32,7 @@ namespace VoDA.FtpServer.Models
             => OnCreate == null ? false : OnCreate.Invoke(client, path);
         public override bool ExistFile(IFtpClient client, string path)
             => OnExistFile == null ? false : OnExistFile.Invoke(client, path);
-        public override bool ExistFoulder(IFtpClient client, string path)
+        public override bool ExistFolder(IFtpClient client, string path)
             => OnExistFoulder == null ? false : OnExistFoulder.Invoke(client, path);
         public override Stream Download(IFtpClient client, string path)
             => OnDownload.Invoke(client, path);

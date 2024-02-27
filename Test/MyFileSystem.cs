@@ -46,7 +46,7 @@ namespace Test
             return File.Exists(Path.Join(rootPath, path));
         }
 
-        public override bool ExistFoulder(IFtpClient client, string path)
+        public override bool ExistFolder(IFtpClient client, string path)
         {
             return Directory.Exists(Path.Join(rootPath, path));
         }

@@ -13,10 +13,10 @@ namespace VoDA.FtpServer.Commands
         {
             if (string.IsNullOrWhiteSpace(args))
                 return Task.FromResult(FolderNotFound());
-            if (configParameters.FileSystemOptions.ExistFoulder(client,
+            if (configParameters.FileSystemOptions.ExistFolder(client,
                     NormalizationPath(Path.Join(client.Root, args))))
                 args = NormalizationPath(Path.Join(client.Root, args));
-            else if (configParameters.FileSystemOptions.ExistFoulder(client, NormalizationPath(args)))
+            else if (configParameters.FileSystemOptions.ExistFolder(client, NormalizationPath(args)))
                 args = NormalizationPath(args);
             else
                 return Task.FromResult(FolderNotFound());

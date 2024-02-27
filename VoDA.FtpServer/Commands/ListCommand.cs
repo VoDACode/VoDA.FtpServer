@@ -18,7 +18,7 @@ namespace VoDA.FtpServer.Commands
             path = NormalizationPath(path);
 
             if (path.Length >= 2 && path[^2..] == "-a") path = path[..^2];
-            if (!configParameters.FileSystemOptions.ExistFoulder(client, path))
+            if (!configParameters.FileSystemOptions.ExistFolder(client, path))
                 return Task.FromResult(CustomResponse(450, "Requested file action not taken"));
             client.SetupDataConnectionOperation(new DataConnectionOperation(client.ListOperation, path));
             return Task.FromResult(CustomResponse(150, $"Opening {client.ConnectionType} mode data transfer for LIST"));

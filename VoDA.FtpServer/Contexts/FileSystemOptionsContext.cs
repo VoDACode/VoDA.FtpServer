@@ -15,7 +15,7 @@ namespace VoDA.FtpServer.Contexts
         /// <param name="client">An instance of the client making the request.</param>
         /// <param name="from">The old full path.</param>
         /// <param name="to">New full path.</param>
-        /// <returns>true if the request was processed successfully, false - if elese</returns>
+        /// <returns>true if the request was processed successfully, false - if else</returns>
         public abstract bool Rename(IFtpClient client, string from, string to);
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace VoDA.FtpServer.Contexts
         /// </summary>
         /// <param name="client">An instance of the client making the request.</param>
         /// <param name="path">The full path to the file.</param>
-        /// <returns>true if the request was processed successfully, false - if elese</returns>
+        /// <returns>true if the request was processed successfully, false - if else</returns>
         public abstract bool DeleteFile(IFtpClient client, string path);
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace VoDA.FtpServer.Contexts
         /// </summary>
         /// <param name="client">An instance of the client making the request.</param>
         /// <param name="path"></param>
-        /// <returns>true if the request was processed successfully, false - if elese</returns>
+        /// <returns>true if the request was processed successfully, false - if else</returns>
         public abstract bool DeleteFolder(IFtpClient client, string path);
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace VoDA.FtpServer.Contexts
         /// </summary>
         /// <param name="client">An instance of the client making the request.</param>
         /// <param name="path">The full path to the folder.</param>
-        /// <returns>true if the request was processed successfully, false - if elese</returns>
+        /// <returns>true if the request was processed successfully, false - if else</returns>
         public abstract bool Create(IFtpClient client, string path);
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace VoDA.FtpServer.Contexts
         /// </summary>
         /// <param name="client">An instance of the client making the request.</param>
         /// <param name="path">The full path to the file.</param>
-        /// <returns>true if the request was processed successfully, false - if elese</returns>
+        /// <returns>true if the request was processed successfully, false - if else</returns>
         public abstract bool ExistFile(IFtpClient client, string path);
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace VoDA.FtpServer.Contexts
         /// </summary>
         /// <param name="client">An instance of the client making the request.</param>
         /// <param name="path">The full path to the folder.</param>
-        /// <returns>true if the request was processed successfully, false - if elese</returns>
-        public abstract bool ExistFoulder(IFtpClient client, string path);
+        /// <returns>true if the request was processed successfully, false - if else</returns>
+        public abstract bool ExistFolder(IFtpClient client, string path);
 
         /// <summary>
         /// A function that processes a request to download a file.

@@ -15,10 +15,10 @@ namespace VoDA.FtpServer.Commands
                 return Task.FromResult(CustomResponse(450, "Requested file action not taken"));
             args = NormalizationPath(args);
             var folder = Path.GetDirectoryName(args);
-            if (configParameters.FileSystemOptions.ExistFoulder(client,
+            if (configParameters.FileSystemOptions.ExistFolder(client,
                     NormalizationPath(Path.Join(client.Root, folder))))
                 args = NormalizationPath(Path.Join(client.Root, args));
-            else if (configParameters.FileSystemOptions.ExistFoulder(client, NormalizationPath(folder)))
+            else if (configParameters.FileSystemOptions.ExistFolder(client, NormalizationPath(folder)))
                 args = NormalizationPath(args);
             else
                 return Task.FromResult(FolderNotFound());
