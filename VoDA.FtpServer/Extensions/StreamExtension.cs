@@ -34,18 +34,14 @@ namespace VoDA.FtpServer.Extensions
             else
             {
                 var buffer = new char[bufferSize];
-                using (var readStream = new StreamReader(input, Encoding.ASCII))
+                using var readStream = new StreamReader(input, Encoding.ASCII);
+                using var writeStream = new StreamWriter(output, Encoding.ASCII);
+                while (!token.IsCancellationRequested &&
+                       (count = readStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    using (var writeStream = new StreamWriter(output, Encoding.ASCII))
-                    {
-                        while (!token.IsCancellationRequested &&
-                               (count = readStream.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            writeStream.Write(buffer, 0, count);
-                            total += count;
-                            progressEvent?.Invoke(input.CanSeek ? input.Length : 0, total);
-                        }
-                    }
+                    writeStream.Write(buffer, 0, count);
+                    total += count;
+                    progressEvent?.Invoke(input.CanSeek ? input.Length : 0, total);
                 }
             }
 
