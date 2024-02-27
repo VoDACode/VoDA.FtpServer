@@ -1,7 +1,7 @@
 ﻿namespace VoDA.FtpServer.Delegates
 {
     /// <summary>
-    /// Called to verify the correctness of the user's password.
+    ///     Called to verify the correctness of the user's password.
     /// </summary>
     /// <param name="username">User name.</param>
     /// <param name="password">User password.</param>

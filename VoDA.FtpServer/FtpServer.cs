@@ -1,31 +1,30 @@
-﻿using Serilog;
-using System;
+﻿using System;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Serilog;
 using VoDA.FtpServer.Controllers;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
-using System.Net;
-using System.Linq;
 
 namespace VoDA.FtpServer
 {
     internal class FtpServer : IFtpServerControl
     {
+        private readonly FtpServerParameters _serverParameters;
         private readonly TcpListener _serverSocket;
-        readonly FtpServerParameters _serverParameters;
-        private bool _isEnable;
-        private Task? _handlerTask;
         private readonly SessionsController _sessionsController = new();
-        public ISessionsController Sessions => _sessionsController;
+        private Task? _handlerTask;
+        private bool _isEnable;
 
         public FtpServer(FtpServerParameters parameters)
         {
             _serverParameters = parameters;
-            _serverSocket = new TcpListener(_serverParameters.serverOptions.ServerIp, _serverParameters.serverOptions.Port);
+            _serverSocket = new TcpListener(_serverParameters.serverOptions.ServerIp,
+                _serverParameters.serverOptions.Port);
             var logger = new LoggerConfiguration();
             if (_serverParameters.serverLogOptions.Level != LogLevel.None)
                 logger.WriteTo.Console();
@@ -35,6 +34,8 @@ namespace VoDA.FtpServer
                 logger.MinimumLevel.Debug();
             Log.Logger = logger.CreateLogger();
         }
+
+        public ISessionsController Sessions => _sessionsController;
 
         public Task StartAsync(CancellationToken token)
         {
@@ -48,11 +49,13 @@ namespace VoDA.FtpServer
                 Log.Information("Enabled limited connections mode.");
                 Log.Information($"Max count connections = {_serverParameters.serverOptions.MaxConnections}");
             }
+
             if (!IPAddress.Any.Equals(_serverParameters.serverOptions.ServerIp))
             {
                 Log.Information("Enabled filter connections mode.");
                 Log.Information($"Waiting connection from {_serverParameters.serverOptions.ServerIp}");
             }
+
             return Handler(token);
         }
 
@@ -83,24 +86,27 @@ namespace VoDA.FtpServer
                         CloseConnection(tcp, sw);
                         continue;
                     }
+
                     if (_serverParameters.serverAccessControl.EnableConnectionFiltering)
-                    {
-                        if (_serverParameters.serverAccessControl.BlacklistMode == _serverParameters.serverAccessControl.Filters.Any(p => p.Equals(remoteEndpoint.Address)))
+                        if (_serverParameters.serverAccessControl.BlacklistMode ==
+                            _serverParameters.serverAccessControl.Filters.Any(p => p.Equals(remoteEndpoint.Address)))
                         {
                             CloseConnection(tcp, sw, "221 Access is denied.");
                             continue;
                         }
-                    }
+
                     if (_serverParameters.serverOptions.MaxConnections > 0
-                    && _sessionsController.Count >= _serverParameters.serverOptions.MaxConnections)
+                        && _sessionsController.Count >= _serverParameters.serverOptions.MaxConnections)
                     {
                         CloseConnection(tcp, sw, "221 The server is full!");
                         continue;
                     }
+
                     var client = new FtpClient(tcp);
                     _sessionsController.Add(client);
                     client.HandleClient(_serverParameters);
                 }
+
                 _serverSocket.Stop();
             }, token);
             return _handlerTask;
@@ -114,6 +120,7 @@ namespace VoDA.FtpServer
                 sw.Flush();
                 sw.Close();
             }
+
             tcp.Close();
         }
     }

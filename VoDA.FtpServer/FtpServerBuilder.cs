@@ -1,31 +1,20 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-
-using VoDA.FtpServer.Models;
-using VoDA.FtpServer.Interfaces;
-using VoDA.FtpServer.Contexts;
+using System.Security.Cryptography.X509Certificates;
 using VoDA.FtpServer.Commands;
+using VoDA.FtpServer.Contexts;
+using VoDA.FtpServer.Interfaces;
+using VoDA.FtpServer.Models;
 
 namespace VoDA.FtpServer
 {
     public class FtpServerBuilder
     {
-#nullable disable
-        private readonly FtpServerOptions _serverOptions = new();
-        private AuthorizationOptionsContext _serverAuthorization = new FtpServerAuthorizationOptions();
-        private CertificateOptionsContext _serverCertificate;
-        private FileSystemOptionsContext _serverFileSystemOptions;
-        private AccessControlOptionsContext _serverAccessControl = new FtpServerAccessControlOptions();
-        private readonly FtpServerLogOptions _serverLogOptions = new();
-        private FtpServer _server;
-#nullable enable
-
         /// <summary>
-        /// Configures the operation of the log system.
-		/// </summary>
-		/// <returns>A builder object.</returns>
+        ///     Configures the operation of the log system.
+        /// </summary>
+        /// <returns>A builder object.</returns>
         public FtpServerBuilder Log(Action<IFtpServerLogOptions> config)
         {
             config.Invoke(_serverLogOptions);
@@ -33,7 +22,7 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures the operation of the server listener.
+        ///     Configures the operation of the server listener.
         /// </summary>
         /// <returns>A builder object.</returns>
         public FtpServerBuilder ListenerSettings(Action<IFtpServerOptions> config)
@@ -43,7 +32,7 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures the operation of the authorization.
+        ///     Configures the operation of the authorization.
         /// </summary>
         /// <returns>A builder object.</returns>
         // ReSharper disable once UnusedMember.Global
@@ -57,9 +46,9 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures the operation of the authorization.
+        ///     Configures the operation of the authorization.
         /// </summary>
-        /// <typeparam name="T">Must inherit from <see cref="AuthorizationOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <typeparam name="T">Must inherit from <see cref="AuthorizationOptionsContext" /> and have a <c>new()</c> implementation</typeparam>
         /// <returns>A builder object.</returns>
         public FtpServerBuilder Authorization<T>() where T : AuthorizationOptionsContext, new()
         {
@@ -68,7 +57,7 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures work with certificates.
+        ///     Configures work with certificates.
         /// </summary>
         /// <returns>A builder object.</returns>
         public FtpServerBuilder Certificate(Action<IFtpServerCertificateOptions> config)
@@ -79,14 +68,15 @@ namespace VoDA.FtpServer
                 !string.IsNullOrWhiteSpace(data.CertificateKey))
             {
                 data.CertificatePath = Path.Join(
-                        Path.GetDirectoryName(Path.GetFullPath(data.CertificatePath)),
-                        Path.GetFileName(data.CertificatePath)
-                    );
+                    Path.GetDirectoryName(Path.GetFullPath(data.CertificatePath)),
+                    Path.GetFileName(data.CertificatePath)
+                );
                 data.CertificateKey = Path.Join(
-                        Path.GetDirectoryName(Path.GetFullPath(data.CertificateKey)),
-                        Path.GetFileName(data.CertificateKey)
-                    );
+                    Path.GetDirectoryName(Path.GetFullPath(data.CertificateKey)),
+                    Path.GetFileName(data.CertificateKey)
+                );
             }
+
             if (!string.IsNullOrWhiteSpace(data.CertificatePath) &&
                 !File.Exists(data.CertificatePath) &&
                 !string.IsNullOrWhiteSpace(data.CertificateKey) &&
@@ -100,17 +90,19 @@ namespace VoDA.FtpServer
 
                 File.WriteAllText(data.CertificatePath,
                     "-----BEGIN CERTIFICATE-----\r\n"
-                    + Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks)
+                    + Convert.ToBase64String(cert.Export(X509ContentType.Cert),
+                        Base64FormattingOptions.InsertLineBreaks)
                     + "\r\n-----END CERTIFICATE-----");
             }
+
             _serverCertificate = data;
             return this;
         }
 
         /// <summary>
-        /// Configures work with certificates.
+        ///     Configures work with certificates.
         /// </summary>
-        /// <typeparam name="T">Must inherit from <see cref="CertificateOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <typeparam name="T">Must inherit from <see cref="CertificateOptionsContext" /> and have a <c>new()</c> implementation</typeparam>
         /// <returns>A builder object.</returns>
         // ReSharper disable once UnusedMember.Global
         public FtpServerBuilder Certificate<T>() where T : CertificateOptionsContext, new()
@@ -120,7 +112,7 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures work with the file system.
+        ///     Configures work with the file system.
         /// </summary>
         /// <returns>A builder object.</returns>
         public FtpServerBuilder FileSystem(Action<IFtpServerFileSystemOptions> config)
@@ -133,9 +125,9 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures work with the file system.
+        ///     Configures work with the file system.
         /// </summary>
-        /// <typeparam name="T">Must inherit from <see cref="FileSystemOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <typeparam name="T">Must inherit from <see cref="FileSystemOptionsContext" /> and have a <c>new()</c> implementation</typeparam>
         /// <returns>A builder object.</returns>
         public FtpServerBuilder FileSystem<T>() where T : FileSystemOptionsContext, new()
         {
@@ -144,7 +136,7 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures access to the server.
+        ///     Configures access to the server.
         /// </summary>
         /// <returns>A builder object.</returns>
         // ReSharper disable once UnusedMember.Global
@@ -157,9 +149,9 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Configures access to the server.
+        ///     Configures access to the server.
         /// </summary>
-        /// <typeparam name="T">Must inherit from <see cref="AccessControlOptionsContext"/> and have a <c>new()</c> implementation</typeparam>
+        /// <typeparam name="T">Must inherit from <see cref="AccessControlOptionsContext" /> and have a <c>new()</c> implementation</typeparam>
         /// <returns>A builder object.</returns>
         // ReSharper disable once UnusedMember.Global
         public FtpServerBuilder AccessControl<T>() where T : AccessControlOptionsContext, new()
@@ -170,7 +162,7 @@ namespace VoDA.FtpServer
 
 
         /// <summary>
-        /// Adds a custom command.
+        ///     Adds a custom command.
         /// </summary>
         /// <returns>A builder object.</returns>
         public FtpServerBuilder AddCommand<T>() where T : BaseCommand
@@ -180,25 +172,36 @@ namespace VoDA.FtpServer
         }
 
         /// <summary>
-        /// Creates a server instance.
+        ///     Creates a server instance.
         /// </summary>
-        /// <returns>The interface <see cref="IFtpServerControl"/> for managing the server.</returns>
+        /// <returns>The interface <see cref="IFtpServerControl" /> for managing the server.</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public IFtpServerControl Build()
         {
             if (_serverFileSystemOptions == null)
-                throw new ArgumentNullException(nameof(_serverFileSystemOptions),"The algorithm for processing requests to work with the file system is not specified!");
+                throw new ArgumentNullException(nameof(_serverFileSystemOptions),
+                    "The algorithm for processing requests to work with the file system is not specified!");
             if (_serverCertificate == null)
-                throw new ArgumentNullException(nameof(_serverCertificate), "Security certificate file names are not specified!");
-            _server = new FtpServer(new FtpServerParameters(_serverOptions, _serverAuthorization, _serverFileSystemOptions, _serverCertificate, _serverLogOptions, _serverAccessControl));
+                throw new ArgumentNullException(nameof(_serverCertificate),
+                    "Security certificate file names are not specified!");
+            _server = new FtpServer(new FtpServerParameters(_serverOptions, _serverAuthorization,
+                _serverFileSystemOptions, _serverCertificate, _serverLogOptions, _serverAccessControl));
             return _server;
         }
 
-        private static void RunAndValid<TAction, TType>(Action<TAction> action, TType type) 
+        private static void RunAndValid<TAction, TType>(Action<TAction> action, TType type)
             where TType : IValidConfig, TAction
         {
             action.Invoke(type);
             type.Valid();
         }
+#nullable disable
+        private readonly FtpServerOptions _serverOptions = new();
+        private AuthorizationOptionsContext _serverAuthorization = new FtpServerAuthorizationOptions();
+        private CertificateOptionsContext _serverCertificate;
+        private FileSystemOptionsContext _serverFileSystemOptions;
+        private AccessControlOptionsContext _serverAccessControl = new FtpServerAccessControlOptions();
+        private readonly FtpServerLogOptions _serverLogOptions = new();
+        private FtpServer _server;
     }
 }

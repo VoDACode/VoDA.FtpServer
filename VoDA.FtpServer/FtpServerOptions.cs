@@ -1,6 +1,5 @@
-﻿using System.Net;
-using System;
-
+﻿using System;
+using System.Net;
 using VoDA.FtpServer.Interfaces;
 
 namespace VoDA.FtpServer
@@ -14,9 +13,9 @@ namespace VoDA.FtpServer
         public void Valid()
         {
             if (Port is <= 0 or >= 65536)
-                throw new ArgumentOutOfRangeException(nameof(FtpServerOptions.Port));
+                throw new ArgumentOutOfRangeException(nameof(Port));
             if (MaxConnections < 0)
-                throw new ArgumentOutOfRangeException(nameof(FtpServerOptions.MaxConnections));
+                throw new ArgumentOutOfRangeException(nameof(MaxConnections));
         }
     }
 }
