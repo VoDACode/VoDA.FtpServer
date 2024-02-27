@@ -1,7 +1,5 @@
 ﻿using System.Threading.Tasks;
-
 using VoDA.FtpServer.Attributes;
-using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -14,7 +12,8 @@ namespace VoDA.FtpServer.Commands
         {
             if (args == null || !configParameters.FileSystemOptions.ExistFile(client, NormalizationPath(args)))
                 return Task.FromResult(FileNotFound());
-            return Task.FromResult(CustomResponse(213, configParameters.FileSystemOptions.GetFileSize(client, NormalizationPath(args)).ToString()));
+            return Task.FromResult(CustomResponse(213,
+                configParameters.FileSystemOptions.GetFileSize(client, NormalizationPath(args)).ToString()));
         }
     }
 }

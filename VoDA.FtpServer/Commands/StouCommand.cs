@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-
 using VoDA.FtpServer.Attributes;
-using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -13,7 +11,7 @@ namespace VoDA.FtpServer.Commands
     {
         public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
-            string path = new Guid().ToString();
+            var path = new Guid().ToString();
             path = NormalizationPath(path);
             client.SetupDataConnectionOperation(new DataConnectionOperation(client.StoreOperation, path));
             return Task.FromResult(CustomResponse(150, $"Opening {client.ConnectionType} mode data transfer for STOU"));

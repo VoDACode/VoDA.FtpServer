@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
-
 using VoDA.FtpServer.Attributes;
-using VoDA.FtpServer.Contexts;
+using VoDA.FtpServer.Enums;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -14,19 +14,20 @@ namespace VoDA.FtpServer.Commands
     {
         public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
-            client.ConnectionType = Enums.ConnectionType.Passive;
+            client.ConnectionType = ConnectionType.Passive;
             if (client.TcpSocket?.Client.LocalEndPoint == null)
                 return Task.FromResult(UnknownCommandParameter());
-            IPAddress localAddress = ((IPEndPoint)client.TcpSocket.Client.LocalEndPoint).Address;
-            client.PassiveListener = new System.Net.Sockets.TcpListener(localAddress, 0);
+            var localAddress = ((IPEndPoint)client.TcpSocket.Client.LocalEndPoint).Address;
+            client.PassiveListener = new TcpListener(localAddress, 0);
             client.PassiveListener.Start();
-            IPEndPoint localEndpoint = (IPEndPoint)client.PassiveListener.LocalEndpoint;
-            byte[] address = localEndpoint.Address.GetAddressBytes();
-            short port = (short)localEndpoint.Port;
-            byte[] portArray = BitConverter.GetBytes(port);
+            var localEndpoint = (IPEndPoint)client.PassiveListener.LocalEndpoint;
+            var address = localEndpoint.Address.GetAddressBytes();
+            var port = (short)localEndpoint.Port;
+            var portArray = BitConverter.GetBytes(port);
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(portArray);
-            return Task.FromResult(CustomResponse(227, $"Entering Passive Mode ({address[0]},{address[1]},{address[2]},{address[3]},{portArray[0]},{portArray[1]})"));
+            return Task.FromResult(CustomResponse(227,
+                $"Entering Passive Mode ({address[0]},{address[1]},{address[2]},{address[3]},{portArray[0]},{portArray[1]})"));
         }
     }
 }

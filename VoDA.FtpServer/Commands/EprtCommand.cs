@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-
 using VoDA.FtpServer.Attributes;
 using VoDA.FtpServer.Enums;
-using VoDA.FtpServer.Contexts;
 using VoDA.FtpServer.Interfaces;
 using VoDA.FtpServer.Models;
 
@@ -15,16 +13,16 @@ namespace VoDA.FtpServer.Commands
     {
         public override Task<IFtpResult> Invoke(FtpClient client, FtpClientParameters configParameters, string? args)
         {
-            if (args == null || args.Length == 0)
+            if (string.IsNullOrEmpty(args))
                 return Task.FromResult(UnknownCommandParameter());
             client.ConnectionType = ConnectionType.Active;
 
-            char delimiter = args[0];
+            var delimiter = args[0];
 
-            string[] rawSplit = args.Split(new char[] { delimiter }, StringSplitOptions.RemoveEmptyEntries);
+            var rawSplit = args.Split(new[] { delimiter }, StringSplitOptions.RemoveEmptyEntries);
 
-            string ipAddress = rawSplit[1];
-            string port = rawSplit[2];
+            var ipAddress = rawSplit[1];
+            var port = rawSplit[2];
 
             client.DataEndpoint = new IPEndPoint(IPAddress.Parse(ipAddress), int.Parse(port));
             return Task.FromResult(CustomResponse(200, "Data connection is established"));
