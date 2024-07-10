@@ -30,6 +30,12 @@ namespace VoDA.FtpServer.Commands
                 Array.Reverse(port);
             try
             {
+                IPAddress address = new IPAddress(ipAddress);
+                int portNumber = BitConverter.ToUInt16(port, 0);
+                if(portNumber < 0 || portNumber > 65535)
+                {
+                    return Task.FromResult(CustomResponse(500, "Invalid port number"));
+                }
                 client.DataEndpoint = new IPEndPoint(new IPAddress(ipAddress), BitConverter.ToInt16(port, 0));
             }
             catch (Exception ex)
