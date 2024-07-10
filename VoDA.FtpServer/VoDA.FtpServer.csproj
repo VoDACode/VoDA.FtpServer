@@ -17,10 +17,11 @@
 		<Version>1.3.9</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Include="D:\Projects\VoDA.FtpServer\LICENSE">
+	  <None Include="..\LICENSE">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
 	  </None>
